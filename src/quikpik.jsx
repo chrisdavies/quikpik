@@ -1,14 +1,35 @@
 /* eslint-disable jsx/no-undef */
 import { render } from 'solid-js/dom';
+import { onCleanup } from 'solid-js';
 
 /**
  * @typedef PickerInstance
  * @property { function(): void } close close and clean up the picker.
  */
 
-function Picker() {
+function Picker({ pickerInstance }) {
+  function close() {
+    pickerInstance.close();
+  }
+
+  function cancelEvent(e) {
+    e.stopPropagation();
+  }
+
+  function closeOnEsc(e) {
+    if (e.key === 'Escape' || e.code === 'Escape') {
+      close();
+    }
+  }
+
+  document.addEventListener('keydown', closeOnEsc);
+
+  onCleanup(() => {
+    document.removeEventListener('keydown', closeOnEsc);
+  });
+
   return (
-    <div class="quikpik">
+    <div class="quikpik" onClick={close}>
       <style jsx>
         {`
           @keyframes quikpik-spin {
@@ -195,7 +216,7 @@ function Picker() {
           }
         `}
       </style>
-      <div class="quikpik-body">
+      <div class="quikpik-body" onClick={cancelEvent}>
         <nav class="quikpik-nav">
           <a href="#" class="quikpik-opt quikpik-opt-current">
             <svg
@@ -280,12 +301,16 @@ function Picker() {
 export function quikpik() {
   const root = document.createElement('div');
 
-  document.body.appendChild(root);
-  render(Picker, root);
+  function close() {
+    root.remove();
+  }
 
-  return {
-    close() {
-      root.remove();
-    },
+  const pickerInstance = {
+    close,
   };
+
+  document.body.appendChild(root);
+  render(() => <Picker pickerInstance={pickerInstance} />, root);
+
+  return pickerInstance;
 }
