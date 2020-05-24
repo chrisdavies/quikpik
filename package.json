@@ -1,0 +1,112 @@
+{
+  "name": "quikpik",
+  "version": "0.0.1",
+  "description": "A file picker for evergreen browsers.",
+  "main": "index.js",
+  "scripts": {
+    "build": "NODE_ENV=production rollup --config ./build/rollup.config.js",
+    "test": "jest --clearCache && jest",
+    "start": "rollup --config ./build/rollup.config.js --sourcemap --watch"
+  },
+  "author": "Christopher Davies <github@christophilus.com>",
+  "license": "MIT",
+  "dependencies": {
+    "alite": "0.1.4",
+    "solid-js": "0.18.0",
+    "solid-styled-jsx": "0.18.0",
+    "styled-jsx": "3.2.5"
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "5.0.0",
+    "@rollup/plugin-commonjs": "11.1.0",
+    "@rollup/plugin-html": "0.2.0",
+    "@rollup/plugin-node-resolve": "7.1.3",
+    "@rollup/plugin-replace": "2.3.2",
+    "@rollup/plugin-sucrase": "3.0.0",
+    "babel": "6.23.0",
+    "babel-jest": "26.0.1",
+    "babel-preset-solid": "0.18.0",
+    "enzyme": "3.11.0",
+    "eslint": "7.0.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-jsx": "0.1.0",
+    "eslint-plugin-prettier": "3.1.3",
+    "prettier": "2.0.5",
+    "rollup": "2.9.1",
+    "rollup-plugin-livereload": "1.3.0",
+    "rollup-plugin-postcss": "3.1.1",
+    "rollup-plugin-serve": "1.0.1",
+    "rollup-plugin-terser": "5.3.0",
+    "rollup-pluginutils": "2.8.2",
+    "stylelint": "13.3.3",
+    "stylelint-config-prettier": "8.0.1",
+    "stylelint-config-standard": "20.0.0",
+    "stylelint-prettier": "1.1.2"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es6": true,
+      "node": true
+    },
+    "plugins": [
+      "jsx",
+      "prettier"
+    ],
+    "extends": [
+      "plugin:prettier/recommended"
+    ],
+    "rules": {
+      "prettier/prettier": "error",
+      "no-unused-vars": "error",
+      "jsx/uses-factory": [
+        1,
+        {
+          "pragma": "JSX"
+        }
+      ],
+      "jsx/factory-in-scope": [
+        0,
+        {
+          "pragma": "h"
+        }
+      ],
+      "jsx/mark-used-vars": 1,
+      "jsx/no-undef": 1
+    },
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": 2018,
+      "sourceType": "module"
+    }
+  },
+  "stylelint": {
+    "extends": [
+      "stylelint-prettier/recommended"
+    ],
+    "ignoreFiles": [
+      "**/*.js",
+      "**/*.jsx"
+    ],
+    "rules": {
+      "color-hex-case": "lower"
+    }
+  },
+  "babel": {
+    "presets": [
+      "solid"
+    ],
+    "plugins": [
+      "solid-styled-jsx/babel"
+    ]
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 100
+  }
+}

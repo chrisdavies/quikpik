@@ -1,0 +1,29 @@
+# IDE
+.idea/
+
+# Logs
+*.log*
+yarn.lock
+
+# Misc
+example
+notes/
+node_modules
+coverage
+.nyc_output
+*.xml
+.DS_Store
+.cache/
+tmp/
+
+# Dist
+*.gz
+dist/
+
+# Possibly sensitive data
+*.csv
+samples/
+todo.md
+
+# Config
+.env
