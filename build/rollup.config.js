@@ -1,6 +1,7 @@
 import serve from 'rollup-plugin-serve';
 import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 import sucrase from '@rollup/plugin-sucrase';
 import livereload from 'rollup-plugin-livereload';
 import postcss from 'rollup-plugin-postcss';
@@ -32,10 +33,15 @@ export default {
     resolve({
       extensions: ['.js', '.jsx'],
     }),
+    commonjs(),
     replace({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     }),
-    babel(),
+    babel({
+      exclude: ['node_modules/**'],
+      presets: ['solid'],
+      plugins: ['solid-styled-jsx/babel'],
+    }),
     sucrase({
       exclude: ['node_modules/**'],
       transforms: ['jsx'],
