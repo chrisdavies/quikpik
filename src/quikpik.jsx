@@ -204,11 +204,6 @@ function PickerForm(props) {
     <PickerBody>
       <style jsx>
         {`
-          a {
-            text-decoration: none;
-            color: inherit;
-          }
-
           .quikpik-nav {
             color: #6b7280;
             margin-right: 1.5rem;
@@ -231,6 +226,7 @@ function PickerForm(props) {
             border-left: 2px solid transparent;
             padding-left: 0.5rem;
             margin-left: -0.5rem;
+            text-decoration: none;
           }
 
           .quikpik-opt-current {
