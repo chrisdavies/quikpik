@@ -912,6 +912,7 @@ function PickerForm(props) {
           }
 
           .quikpik-opt {
+            background: transparent;
             cursor: pointer;
             border: 0;
             font: inherit;
