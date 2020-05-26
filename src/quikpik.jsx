@@ -432,7 +432,7 @@ function VideoPicker(props) {
   }
 
   function getVideoOptions() {
-    const mimeTypes = ['video/mpeg', 'video/webm; codecs=vp9', 'video/webm; codecs=vp8'];
+    const mimeTypes = ['video/mpeg', 'video/webm'];
 
     const [mimeType] = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t));
 
