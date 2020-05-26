@@ -25,7 +25,6 @@ function FilePicker(props) {
   function onDragOver(e) {
     e.preventDefault();
 
-    console.log('onDragOver', e);
     setState((s) => ({ ...s, isDropTarget: true }));
   }
 
@@ -207,123 +206,6 @@ function PickerBody(props) {
     </div>
   );
 }
-
-// function getVideoOptions() {
-//   const mimeTypes = ['video/mpeg', 'video/webm; codecs=vp9', 'video/webm; codecs=vp8'];
-
-//   const [mimeType] = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t));
-
-//   if (!mimeType) {
-//     throw new Error('No supported mime type found.');
-//   }
-
-//   return { mimeType };
-// }
-
-// function recordVideoStream() {
-//   const options = getVideoOptions();
-//   const recordedChunks = [];
-
-//   function handleDataAvailable(e) {
-//     if (e.data.size > 0) {
-//       recordedChunks.push(e.data);
-//     } else {
-//       // ...
-//       console.log('NO DATA...');
-//     }
-//   }
-
-//   mediaRecorder = new MediaRecorder(stream, options);
-//   mediaRecorder.ondataavailable = handleDataAvailable;
-//   mediaRecorder.start();
-
-//   return {
-//     getVideo() {
-//       return new Blob(recordedChunks);
-//     },
-//     start() {
-//       // Reset the recording
-//       recordedChunks.splice(0, recordedChunks.length);
-//       mediaRecorder.start();
-//     },
-//     stop() {
-//       mediaRecorder.stop();
-//     },
-//   };
-// }
-
-// function getVideoStream(stream) {
-//   function playRecording() {
-//     const superBuffer = new Blob(recordedChunks);
-//     // const recordedVid = document.querySelector('.recorded');
-//     vid.muted = false;
-//     vid.srcObject = undefined;
-//     vid.src = window.URL.createObjectURL(superBuffer);
-//     vid.play();
-//   }
-
-//   document.querySelector('.stop').addEventListener('click', () => {
-//     mediaRecorder.stop();
-//   });
-
-//   document.querySelector('.play').addEventListener('click', playRecording);
-// }
-
-// // Opts are constraints: { audio: true, video: true }
-// function getMedia(constraints) {
-//   navigator.mediaDevices.getUserMedia(constraints).then(success).catch(failure);
-
-//   // const constraints = { audio: true, video: true };
-//   //   const vid = document.querySelector('video');
-//   //   function getVideoOptions() {
-//   //     const mimeTypes = [
-//   //       'video/mpeg',
-//   //       'video/webm; codecs=vp9',
-//   //       'video/webm; codecs=vp8',
-//   //     ]
-//   //     const [mimeType] = mimeTypes.filter(t => MediaRecorder.isTypeSupported(t));
-//   //     if (!mimeType) {
-//   //       throw new Error('No supported mime type found.');
-//   //     }
-//   //     return { mimeType };
-//   //   }
-//   //   function success(stream) {
-//   //     const options = getVideoOptions();
-//   //     const recordedChunks = [];
-//   //     function handleDataAvailable(e) {
-//   //       if (e.data.size > 0) {
-//   //         recordedChunks.push(e.data);
-//   //       } else {
-//   //         // ...
-//   //         console.log('NO DATA...');
-//   //       }
-//   //     }
-//   //     mediaRecorder = new MediaRecorder(stream, options);
-//   //     mediaRecorder.ondataavailable = handleDataAvailable;
-//   //     mediaRecorder.start();
-//   //     console.log('playing...');
-//   //     vid.srcObject = stream;
-//   //     vid.muted = true;
-//   //     vid.play();
-//   //     function playRecording() {
-//   //       const superBuffer = new Blob(recordedChunks);
-//   //       // const recordedVid = document.querySelector('.recorded');
-//   //       vid.muted = false;
-//   //       vid.srcObject = undefined;
-//   //       vid.src = window.URL.createObjectURL(superBuffer);
-//   //       vid.play();
-//   //     }
-//   //     document.querySelector('.stop').addEventListener('click', () => {
-//   //       mediaRecorder.stop();
-//   //     });
-//   //     document.querySelector('.play').addEventListener('click', playRecording);
-//   //   }
-//   //   function failure(e) {
-//   //     console.error(e);
-//   //     alert('FAIL');
-//   //   }
-//   //   navigator.mediaDevices.getUserMedia(constraints).then(success).catch(failure);
-// }
 
 function PhotoPicker(props) {
   const [state, setState] = createState({
@@ -514,9 +396,255 @@ function PhotoPicker(props) {
   );
 }
 
+function VideoPicker(props) {
+  const [state, setState] = createState({
+    // init | error | video | recording | confirm
+    mode: 'init',
+
+    // The error message to be displayed.
+    error: undefined,
+
+    // The video stream, if successfully created
+    stream: undefined,
+
+    // The chunks of video that have been captured
+    recordedChunks: [],
+
+    // The media recorder, if available
+    mediaRecorder: undefined,
+
+    // The video URL for confirmation
+    videoUrl: undefined,
+
+    // The video blob for upload
+    video: undefined,
+  });
+
+  let vid;
+
+  function handleDataAvailable(e) {
+    if (e.data.size > 0) {
+      setState((s) => ({ ...s, recordedChunks: [...s.recordedChunks, e.data] }));
+    } else {
+      console.error('No data available.', e);
+    }
+  }
+
+  function getVideoOptions() {
+    const mimeTypes = ['video/mpeg', 'video/webm; codecs=vp9', 'video/webm; codecs=vp8'];
+
+    const [mimeType] = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t));
+
+    if (!mimeType) {
+      throw new Error('No supported mime type found.');
+    }
+
+    return { mimeType };
+  }
+
+  function onstop() {
+    // Get rid of the "; codex=vp9" portion of the mime type
+    const [mimeType] = getVideoOptions().mimeType.split(';');
+    const blob = new Blob(state.recordedChunks, { type: mimeType });
+    const [, ext] = mimeType.split('/');
+
+    blob.name = `yourvideo.${ext}`;
+
+    vid.pause();
+    vid.srcObject = undefined;
+    vid.src = URL.createObjectURL(blob);
+    vid.muted = false;
+    vid.controls = true;
+
+    setState((s) => ({ ...s, mode: 'confirm', video: blob, videoUrl: vid.src }));
+  }
+
+  function showStream(stream) {
+    vid.srcObject = stream;
+    vid.muted = true;
+    vid.controls = false;
+    vid.play();
+  }
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true, audio: true })
+    .then((stream) => {
+      setState((s) => ({ ...s, mode: 'video', stream }));
+      showStream(stream);
+    })
+    .catch((err) => {
+      console.error(err);
+      setState((s) => ({ ...s, mode: 'error', error: 'Unable to connect to your camera.' }));
+    });
+
+  function recordVideo() {
+    const mediaRecorder = new MediaRecorder(state.stream, getVideoOptions());
+    mediaRecorder.ondataavailable = handleDataAvailable;
+    mediaRecorder.onstop = onstop;
+    mediaRecorder.start();
+
+    setState((s) => ({ ...s, mode: 'recording', mediaRecorder }));
+  }
+
+  function stopRecording() {
+    state.mediaRecorder.stop();
+  }
+
+  function retake() {
+    URL.revokeObjectURL(state.videoUrl);
+    setState((s) => ({
+      ...s,
+      mode: 'video',
+      recordedChunks: [],
+      video: undefined,
+      videoUrl: undefined,
+    }));
+    showStream(state.stream);
+  }
+
+  function upload() {
+    props.uploadFile(state.video);
+    URL.revokeObjectURL(state.videoUrl);
+  }
+
+  return (
+    <div class="quikpik-photo">
+      <style jsx global>
+        {`
+          .quikpik-photo {
+            box-sizing: border-box;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #161e2e;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 0.375rem;
+          }
+
+          .quikpik-vid-wrapper {
+            flex-grow: 1;
+          }
+
+          .quikpik-info {
+            color: #6b7280;
+          }
+
+          .quikpik-media-footer {
+            padding: 1rem;
+          }
+
+          .quikpik-vid-wrapper {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+          }
+
+          .quikpik-vid {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            margin: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+          }
+
+          .quikpik-stop-video,
+          .quikpik-record-video {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #f00;
+            box-shadow: inset 0 0 0 2px;
+            border: 4px solid #fff;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 100%;
+            outline: none;
+          }
+
+          .quikpik-stop-video {
+            background: transparent;
+          }
+
+          .quikpik-stop-video::before {
+            content: '';
+            background: #f00;
+            height: 1.5rem;
+            width: 1.5rem;
+            border-radius: 0.25rem;
+          }
+
+          .quikpik-record-video:focus {
+            box-shadow: inset 0 0 0 4px;
+          }
+
+          .quikpik-media-retake,
+          .quikpik-media-accept {
+            background: #5a67d8;
+            color: #fff;
+            border: 0;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            margin: 0 0.25rem;
+            outline: none;
+          }
+
+          .quikpik-media-retake {
+            border: 1px solid;
+            background: transparent;
+            color: inherit;
+          }
+
+          .quikpik-confirm-item {
+            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+          }
+        `}
+      </style>
+      {state.mode === 'error' && <p class="quikpik-error">{state.error}</p>}
+      {state.mode === 'init' && <p class="quikpik-info">Connecting to your camera...</p>}
+      {(state.mode === 'video' || state.mode === 'recording' || state.mode === 'confirm') && (
+        <div class="quikpik-vid-wrapper">
+          <video class="quikpik-vid" ref={vid}></video>
+        </div>
+      )}
+      {state.mode === 'video' && (
+        <footer class="quikpik-media-footer">
+          <button class="quikpik-record-video" onClick={recordVideo}></button>
+        </footer>
+      )}
+      {state.mode === 'recording' && (
+        <footer class="quikpik-media-footer">
+          <button class="quikpik-stop-video" onClick={stopRecording}></button>
+        </footer>
+      )}
+      {state.mode === 'confirm' && (
+        <footer class="quikpik-media-footer">
+          <button class="quikpik-media-retake" onClick={retake}>
+            Retake
+          </button>
+          <button class="quikpik-media-accept" onClick={upload}>
+            Accept &amp; upload
+          </button>
+        </footer>
+      )}
+    </div>
+  );
+}
+
 const modes = {
   filepicker: FilePicker,
   takephoto: PhotoPicker,
+  takevideo: VideoPicker,
 };
 
 function PickerForm(props) {
@@ -601,7 +729,12 @@ function PickerForm(props) {
           </svg>
           Take picture
         </button>
-        <button type="button" class="quikpik-opt">
+        <button
+          type="button"
+          class="quikpik-opt"
+          classList={{ 'quikpik-opt-current': props.mode === 'takevideo' }}
+          onClick={() => props.setMode('takevideo')}
+        >
           <svg
             class="quikpik-opt-ico"
             fill="currentColor"
