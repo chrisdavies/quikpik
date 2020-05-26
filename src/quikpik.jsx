@@ -1,6 +1,7 @@
 /* eslint-disable jsx/no-undef */
 import { render } from 'solid-js/dom';
 import { onCleanup, createState } from 'solid-js';
+import './image-capture';
 
 /**
  * @typedef PickerInstance
@@ -327,6 +328,7 @@ function PhotoPicker(props) {
           }
 
           .quikpik-snap-photo {
+            background: #fff;
             cursor: pointer;
             box-shadow: inset 0 0 0 2px;
             border: 4px solid #fff;
