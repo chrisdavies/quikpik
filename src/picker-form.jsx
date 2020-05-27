@@ -95,7 +95,7 @@ export function PickerForm(p) {
         <button
           type="button"
           class="quikpik-opt"
-          classList={{ 'quikpik-opt-current': p.mode === 'takephoto' }}
+          classList={{ 'quikpik-opt-current': state.mode === 'takephoto' }}
           onClick={() => setMode('takephoto')}
         >
           <svg

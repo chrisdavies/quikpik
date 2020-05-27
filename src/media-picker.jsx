@@ -3,15 +3,20 @@ import { onCleanup, createState } from 'solid-js';
 import { createRecorder } from './media-lib';
 
 function LiveVid(p) {
+  function ref(el) {
+    // This terrible hack is brought to you by Safari.
+    // Thanks, Safari!!!
+    setTimeout(() => {
+      el.srcObject = p.recorder.liveSrc();
+      el.muted = true;
+      el.controls = false;
+      el.play();
+    });
+  }
+
   return (
     <div class="quikpik-vid-wrapper">
-      <video
-        class="quikpik-vid"
-        srcObject={p.recorder.liveSrc()}
-        muted={true}
-        controls={false}
-        autoplay="true"
-      ></video>
+      <video ref={ref} class="quikpik-vid"></video>
     </div>
   );
 }
@@ -106,12 +111,7 @@ export function MediaPicker(p) {
     file: undefined,
   });
 
-  const recorderOpts =
-    p.mode === 'takephoto'
-      ? { video: true }
-      : p.mode === 'takeaudio'
-      ? { audio: true }
-      : { video: true, audio: true };
+  const recorderOpts = { video: p.mode !== 'takeaudio', audio: p.mode !== 'takephoto' };
 
   function mediaError(err) {
     console.error(err);
