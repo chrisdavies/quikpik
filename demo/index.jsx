@@ -41,6 +41,16 @@ function PickerDemo() {
   return (
     <>
       <button
+        onClick={() =>
+          quikpik({
+            upload: mockUpload,
+            sources: ['filepicker'],
+          })
+        }
+      >
+        There can be only one
+      </button>
+      <button
         onClick={(e) =>
           quikpik({
             customProgress: true,

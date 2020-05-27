@@ -19,6 +19,7 @@ import { PickerProgress } from './picker-progress';
  * @param {{ opts: PickerOptions, pickerInstance: PickerInstance }} props
  */
 function Picker({ opts, pickerInstance }) {
+  const sources = opts.sources || ['filepicker', 'takephoto', 'takevideo', 'takeaudio'];
   const [state, setState] = createState({
     progress: 0,
 
@@ -131,7 +132,7 @@ function Picker({ opts, pickerInstance }) {
         {state.uploader ? (
           <PickerProgress progress={state.progress} file={state.file} />
         ) : (
-          <PickerForm uploadFile={uploadFile} />
+          <PickerForm sources={sources} uploadFile={uploadFile} />
         )}
       </div>
     </Show>
