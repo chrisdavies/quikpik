@@ -1,4 +1,4 @@
-import { quikpik } from './quikpik';
+import { quikpik } from '../src';
 
 function mockUpload({ file, onProgress }) {
   console.log('Uploading file:', file.name, 'type:', file.type);

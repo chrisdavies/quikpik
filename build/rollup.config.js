@@ -23,7 +23,7 @@ const envPlugins = isProduction
     ];
 
 export default {
-  input: 'src/index.jsx',
+  input: isProduction ? 'src/index.js' : 'demo/index.jsx',
   output: {
     file: 'dist/app.js',
     format: 'umd',
