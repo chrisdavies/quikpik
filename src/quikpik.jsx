@@ -52,6 +52,10 @@ function Picker({ opts, pickerInstance }) {
     if (file) {
       const uploader = opts.upload({ file, onProgress });
 
+      // Hacky, but we need to make sure that the API.close call
+      // also cancels the upload, if there is one...
+      pickerInstance.uploader = uploader;
+
       setState((s) => ({
         ...s,
         mode: 'uploading',
@@ -66,8 +70,11 @@ function Picker({ opts, pickerInstance }) {
           setTimeout(close, 1000);
         })
         .catch((err) => {
-          // TODO: stylize this
-          alert('Upload failed.', err.message);
+          // Status of 0 indicates cancellation, not a real error
+          if (err && err.status !== 0) {
+            alert('Upload failed.', err.message);
+          }
+
           close();
         });
     }
@@ -148,12 +155,14 @@ function Picker({ opts, pickerInstance }) {
 export function quikpik(opts) {
   const root = document.createElement('div');
 
-  function close() {
-    root.remove();
-  }
-
   const pickerInstance = {
-    close,
+    close() {
+      if (pickerInstance.uploader) {
+        pickerInstance.uploader.cancel();
+      }
+
+      root.remove();
+    },
   };
 
   document.body.appendChild(root);
