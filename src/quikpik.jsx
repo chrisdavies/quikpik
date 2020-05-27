@@ -116,6 +116,14 @@ function Picker({ opts, pickerInstance }) {
             opacity: 0.75;
             z-index: 10000;
           }
+
+          .quikpik-info {
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+          }
         `}
       </style>
       {state.uploader ? (

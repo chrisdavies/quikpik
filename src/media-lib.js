@@ -1,15 +1,25 @@
 /**
  * This file contains helper functions for managing the browser's media APIs.
  */
-import './image-capture';
+
+// Safari doesn't support ImageCapture (it's in experimental mode)...
+(function loadPolyfill() {
+  if (window.ImageCapture) {
+    return;
+  }
+
+  const polyfill = document.createElement('script');
+  polyfill.src = 'https://unpkg.com/browse/image-capture@0.4.0/lib/imagecapture.min.js';
+  document.head.appendChild(polyfill);
+})();
 
 export function mediaSupport() {
   const supportsVideoAndAudio = !!window.MediaRecorder;
 
   return {
-    imageCapture: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
-    videoCapture: supportsVideoAndAudio,
-    audioCapture: supportsVideoAndAudio,
+    takephoto: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    takevideo: supportsVideoAndAudio,
+    takeaudio: supportsVideoAndAudio,
   };
 }
 

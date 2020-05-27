@@ -1,6 +1,6 @@
 /* eslint-disable jsx/no-undef */
 import { onCleanup, createState } from 'solid-js';
-import { createRecorder } from './media-lib';
+import { createRecorder, mediaSupport } from './media-lib';
 
 function LiveVid(p) {
   function ref(el) {
@@ -90,13 +90,16 @@ function ConfirmMedia(p) {
   );
 }
 
-/**
- * Generic media picker UI
- * @param {object} p
- * @param {takephoto | takevideo | takeaudio} mode
- * @param {(f: file) => { promise: Promise, cancel: () => void }} p.uploadFile
- */
-export function MediaPicker(p) {
+function Unsupported(p) {
+  return (
+    <p class="quikpik-info">
+      Your browser does not support this feature. Supported browsers are Firefox, Brave, Chrome, or
+      Edge.
+    </p>
+  );
+}
+
+function Supported(p) {
   const [state, setState] = createState({
     // init | error | live | recording | confirm
     mode: 'init',
@@ -176,10 +179,6 @@ export function MediaPicker(p) {
 
           .quikpik-vid-wrapper {
             flex-grow: 1;
-          }
-
-          .quikpik-info {
-            color: #6b7280;
           }
 
           .quikpik-media-footer {
@@ -310,4 +309,15 @@ export function MediaPicker(p) {
       )}
     </div>
   );
+}
+
+/**
+ * Generic media picker UI
+ *
+ * @param {object} p
+ * @param {takephoto | takevideo | takeaudio} mode
+ * @param {(f: file) => { promise: Promise, cancel: () => void }} p.uploadFile
+ */
+export function MediaPicker(p) {
+  return mediaSupport()[p.mode] ? Supported(p) : Unsupported(p);
 }
