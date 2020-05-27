@@ -1,3 +1,4 @@
+import { render } from 'solid-js/dom';
 import { quikpik } from '../src';
 
 function mockUpload({ file, onProgress }) {
@@ -36,6 +37,40 @@ function mockUpload({ file, onProgress }) {
   };
 }
 
-quikpik({
-  upload: mockUpload,
-});
+function PickerDemo() {
+  return (
+    <>
+      <button
+        onClick={(e) =>
+          quikpik({
+            customProgress: true,
+
+            upload({ file }) {
+              return mockUpload({
+                file,
+                onProgress(progress) {
+                  e.target.textContent = `${progress}%`;
+                },
+              });
+            },
+          })
+        }
+      >
+        Custom progress
+      </button>
+    </>
+  );
+}
+
+function init() {
+  const root = document.createElement('main');
+  document.body.appendChild(root);
+
+  quikpik({
+    upload: mockUpload,
+  });
+
+  render(PickerDemo, root);
+}
+
+init();

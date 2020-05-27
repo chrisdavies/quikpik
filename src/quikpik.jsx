@@ -1,6 +1,6 @@
 /* eslint-disable jsx/no-undef */
 import { render } from 'solid-js/dom';
-import { onCleanup, createState } from 'solid-js';
+import { onCleanup, createState, Show } from 'solid-js';
 import { PickerForm } from './picker-form';
 import { PickerProgress } from './picker-progress';
 
@@ -11,6 +11,7 @@ import { PickerProgress } from './picker-progress';
 
 /**
  * @typedef {Object} PickerOptions
+ * @property {boolean} customProgress whether or not the user will display progress on their own. Defaults to false.
  * @property { function({ file: File, onProgress: (progress: number) => void}): { promise: Promise<any>; cancel: () => void } } upload upload the specified file
  */
 
@@ -78,60 +79,62 @@ function Picker({ opts, pickerInstance }) {
   });
 
   return (
-    <div class="quikpik" onClick={close}>
-      <style jsx global>
-        {`
-          @keyframes quikpik-spin {
-            0% {
-              transform: translate(-50%, -50%) rotate(0deg);
+    <Show when={!state.uploader || !opts.customProgress}>
+      <div class="quikpik" onClick={close}>
+        <style jsx global>
+          {`
+            @keyframes quikpik-spin {
+              0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+              }
+              100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+              }
             }
-            100% {
-              transform: translate(-50%, -50%) rotate(360deg);
+
+            .quikpik {
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-family: Inter var, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+                Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji,
+                Segoe UI Symbol, Noto Color Emoji;
+              z-index: 10000;
             }
-          }
 
-          .quikpik {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Inter var, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-              Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-              Segoe UI Symbol, Noto Color Emoji;
-            z-index: 10000;
-          }
+            .quikpik::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              bottom: 0;
+              right: 0;
+              background: #6b7280;
+              opacity: 0.75;
+              z-index: 10000;
+            }
 
-          .quikpik::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: #6b7280;
-            opacity: 0.75;
-            z-index: 10000;
-          }
-
-          .quikpik-info {
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-grow: 1;
-          }
-        `}
-      </style>
-      {state.uploader ? (
-        <PickerProgress progress={state.progress} file={state.file} />
-      ) : (
-        <PickerForm uploadFile={uploadFile} />
-      )}
-    </div>
+            .quikpik-info {
+              color: #6b7280;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              flex-grow: 1;
+            }
+          `}
+        </style>
+        {state.uploader ? (
+          <PickerProgress progress={state.progress} file={state.file} />
+        ) : (
+          <PickerForm uploadFile={uploadFile} />
+        )}
+      </div>
+    </Show>
   );
 }
 
