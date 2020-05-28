@@ -2,12 +2,17 @@
   "name": "quikpik",
   "version": "0.0.1",
   "description": "A file picker for evergreen browsers.",
-  "main": "index.js",
+  "main": "dist/quikpik.js",
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "NODE_ENV=production rollup --config ./build/rollup.config.js",
     "test": "jest --clearCache && jest",
     "start": "rollup --config ./build/rollup.config.js --sourcemap --watch"
   },
+  "files": [
+    "dist/quikpik.js",
+    "dist/quikpik.js.map"
+  ],
   "author": "Christopher Davies <github@christophilus.com>",
   "license": "MIT",
   "dependencies": {

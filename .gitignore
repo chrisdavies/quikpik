@@ -19,6 +19,7 @@ tmp/
 # Dist
 *.gz
 dist/
+dev/
 
 # Possibly sensitive data
 *.csv

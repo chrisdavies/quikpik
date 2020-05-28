@@ -16,18 +16,19 @@ const envPlugins = isProduction
   : [
       html(),
       livereload({
-        watch: 'dist',
+        watch: 'dev',
         verbose: true,
       }),
-      serve({ contentBase: ['dist', 'public'], port: 8081 }),
+      serve({ contentBase: ['dev', 'public'], port: 8081 }),
     ];
 
 export default {
   input: isProduction ? 'src/index.js' : 'demo/index.jsx',
   output: {
-    file: 'dist/app.js',
+    file: isProduction ? 'dist/quikpik.js' : 'dev/quikpik.js',
     format: 'umd',
     name: 'quikpik',
+    sourcemap: true,
   },
   plugins: [
     resolve({
