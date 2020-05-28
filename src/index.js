@@ -1,1 +1,3 @@
-export * from './quikpik';
+import { quikpik } from './quikpik';
+
+export default quikpik;
