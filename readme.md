@@ -51,6 +51,10 @@ quikpik({
           }
         }
       };
+      
+      xhr.upload.addEventListener('progress', (e) => {
+        onProgress(Math.ceil((e.loaded / e.total) * 100));
+      });
 
       xhr.open('POST', presigned.url);
       xhr.send(data);
