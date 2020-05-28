@@ -1,5 +1,5 @@
 import { render } from 'solid-js/dom';
-import { quikpik } from '../src';
+import quikpik from '../src';
 
 function mockUpload({ file, onProgress }) {
   console.log('Uploading file:', file.name, 'type:', file.type);
