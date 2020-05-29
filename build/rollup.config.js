@@ -14,7 +14,15 @@ const isProduction = process.env.NODE_ENV === 'production';
 const envPlugins = isProduction
   ? [terser()]
   : [
-      html(),
+      html({
+        meta: [
+          { charset: 'utf-8' },
+          {
+            name: 'viewport',
+            content: 'width=device-width, initial-scale=1',
+          },
+        ],
+      }),
       livereload({
         watch: 'dev',
         verbose: true,

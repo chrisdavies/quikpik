@@ -22,10 +22,19 @@ export function PickerForm(p) {
   const [state, setState] = createState({
     // filepicker | takephoto | takevideo | takeaudio
     mode: 'filepicker',
+    menuVisible: false,
   });
 
   function setMode(mode) {
     setState((s) => ({ ...s, mode }));
+  }
+
+  function toggleMenu() {
+    setState((s) => ({ ...s, menuVisible: !s.menuVisible }));
+  }
+
+  function hideMenu() {
+    setState((s) => ({ ...s, menuVisible: false }));
   }
 
   function MenuItem(props) {
@@ -88,10 +97,76 @@ export function PickerForm(p) {
             margin-right: 0.75rem;
             height: 1.25rem;
           }
+
+          .quikpik-nav-mobile-toggle {
+            display: none;
+          }
+
+          @keyframes quikpik-menu-in {
+            0% {
+              transform: translateX(100%);
+            }
+            100% {
+              transform: translateX(0);
+            }
+          }
+
+          @media only screen and (max-width: 600px) {
+            .quikpik-body {
+              padding: 0;
+              width: calc(100% - 2rem);
+              height: calc(100% - 2rem);
+            }
+
+            .quikpik-nav {
+              position: absolute;
+              top: 0;
+              left: 0;
+              bottom: 0;
+              right: 0;
+              background: #fff;
+              box-shadow: 0.5rem 0 1rem -0.5rem rgba(0, 0, 0, 0.5);
+              border: 0;
+              padding: 2rem;
+              z-index: 1;
+              display: flex;
+              margin: 0;
+              transform: translateX(100%);
+              z-index: -1;
+              visibility: hidden;
+            }
+
+            .quikpik-nav-flyout {
+              transform: translateY(0);
+              animation: quikpik-menu-in 0.1s ease forwards;
+              z-index: 9;
+              visibility: visible;
+            }
+
+            .quikpik-nav-mobile-toggle {
+              display: inline-block;
+              background: transparent;
+              border: none;
+              outline: none;
+              font-size: 1rem;
+              position: absolute;
+              right: 0.5rem;
+              top: 0.5rem;
+              z-index: 10;
+              color: #718096;
+            }
+          }
         `}
       </style>
       <Show when={p.sources.length > 1}>
-        <nav class="quikpik-nav">
+        <button class="quikpik-nav-mobile-toggle" type="button" onClick={toggleMenu}>
+          ☰
+        </button>
+        <nav
+          class="quikpik-nav"
+          classList={{ 'quikpik-nav-flyout': state.menuVisible }}
+          onClick={hideMenu}
+        >
           <MenuItem value="filepicker">
             <svg
               class="quikpik-opt-ico"

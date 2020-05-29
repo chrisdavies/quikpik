@@ -44,6 +44,7 @@ export function PickerBody(p) {
             outline: none;
             animation: quikpik-up 0.25s ease forwards;
             display: flex;
+            overflow: hidden;
           }
 
           .quikpik-body-fit {
