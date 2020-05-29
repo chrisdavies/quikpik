@@ -1,6 +1,6 @@
 {
   "name": "quikpik",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A file picker for evergreen browsers.",
   "main": "dist/quikpik.js",
   "scripts": {
