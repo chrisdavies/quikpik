@@ -5,7 +5,8 @@
     "prepublishOnly": "npm run build",
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public"
+    "start": "sirv public",
+    "test": "jest lib"
   },
   "files": [
     "dist/quikpik.js",
@@ -14,18 +15,25 @@
   "author": "Christopher Davies <github@christophilus.com>",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "7.10.2",
+    "@babel/preset-env": "7.10.2",
     "@rollup/plugin-commonjs": "12.0.0",
     "@rollup/plugin-node-resolve": "8.0.0",
+    "@testing-library/jest-dom": "5.9.0",
+    "@testing-library/svelte": "3.0.0",
+    "babel-jest": "26.0.1",
     "eslint": "7.1.0",
     "eslint-config-prettier": "6.11.0",
     "eslint-plugin-prettier": "3.1.3",
+    "jest": "26.0.1",
     "prettier": "2.0.5",
     "rollup": "2.3.4",
     "rollup-plugin-livereload": "1.3.0",
     "rollup-plugin-svelte": "5.0.3",
     "rollup-plugin-terser": "6.1.0",
     "sirv-cli": "0.4.4",
-    "svelte": "3.0.0"
+    "svelte": "3.0.0",
+    "svelte-jester": "1.0.6"
   },
   "eslintConfig": {
     "env": {
@@ -72,5 +80,30 @@
     "semi": true,
     "singleQuote": true,
     "printWidth": 100
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.svelte$": "svelte-jester",
+      "^.+\\.js$": "babel-jest"
+    },
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-dom/extend-expect"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "svelte"
+    ]
   }
 }
