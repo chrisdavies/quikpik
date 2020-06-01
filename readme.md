@@ -9,7 +9,7 @@ A file picker for evergreen browsers.
 - Record video from your camera
 - Record audio from your microphone
 
-![The hotness](./demo/screenshot.png)
+![The hotness](./public/screenshot.png)
 
 ## Installation
 
