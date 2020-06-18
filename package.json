@@ -1,11 +1,11 @@
 {
   "name": "quikpik",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public",
+    "start": "sirv public --host 0.0.0.0 --port 3000",
     "test": "jest lib"
   },
   "files": [
@@ -16,19 +16,37 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "7.10.2",
+    "@babel/plugin-transform-react-jsx": "7.10.1",
+    "@babel/plugin-transform-runtime": "7.10.1",
+    "@babel/polyfill": "7.10.1",
     "@babel/preset-env": "7.10.2",
+    "@rollup/plugin-babel": "5.0.3",
     "@rollup/plugin-commonjs": "12.0.0",
     "@rollup/plugin-node-resolve": "8.0.0",
+    "@rollup/plugin-replace": "2.3.3",
     "@testing-library/jest-dom": "5.9.0",
     "@testing-library/svelte": "3.0.0",
+    "autoprefixer": "9.8.0",
     "babel-jest": "26.0.1",
+    "babel-plugin-inferno": "6.1.1",
+    "enzyme": "3.11.0",
+    "enzyme-adapter-inferno": "1.3.1",
     "eslint": "7.1.0",
     "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-jsx": "0.1.0",
     "eslint-plugin-prettier": "3.1.3",
+    "eslint-plugin-react": "7.20.0",
+    "inferno": "7.4.2",
+    "inferno-test-utils": "7.4.2",
     "jest": "26.0.1",
+    "postcss": "7.0.32",
+    "postcss-cli": "7.1.1",
+    "postcss-import": "12.0.1",
+    "postcss-reporter": "6.0.1",
     "prettier": "2.0.5",
     "rollup": "2.3.4",
     "rollup-plugin-livereload": "1.3.0",
+    "rollup-plugin-postcss": "3.1.2",
     "rollup-plugin-svelte": "5.0.3",
     "rollup-plugin-terser": "6.1.0",
     "sirv-cli": "0.4.4",
@@ -81,29 +99,16 @@
     "singleQuote": true,
     "printWidth": 100
   },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": "current"
-          }
-        }
-      ]
-    ]
-  },
   "jest": {
     "transform": {
-      "^.+\\.svelte$": "svelte-jester",
-      "^.+\\.js$": "babel-jest"
+      "^.+\\.jsx?$": "babel-jest"
     },
     "setupFilesAfterEnv": [
       "@testing-library/jest-dom/extend-expect"
     ],
     "moduleFileExtensions": [
       "js",
-      "svelte"
+      "jsx"
     ]
   }
 }

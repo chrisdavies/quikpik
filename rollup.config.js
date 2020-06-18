@@ -1,13 +1,36 @@
-import svelte from 'rollup-plugin-svelte';
+import childProcess from 'child_process';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
+import replace from '@rollup/plugin-replace';
+import babel from '@rollup/plugin-babel';
+import postcss from 'rollup-plugin-postcss';
+const postcssImport = require('postcss-import');
+const postcssReporter = require('postcss-reporter');
+const autoprefixer = require('autoprefixer');
 
 const production = !process.env.ROLLUP_WATCH;
 
+function runNpm(cmdName) {
+  const started = {};
+
+  return {
+    writeBundle() {
+      if (!started[cmdName]) {
+        started[cmdName] = true;
+
+        childProcess.spawn('npm', ['run', cmdName], {
+          stdio: ['ignore', 'inherit', 'inherit'],
+          shell: true,
+        });
+      }
+    },
+  };
+}
+
 export default {
-  input: production ? 'lib/index.js' : 'src/main.js',
+  input: production ? 'lib/index.jsx' : 'src/main.jsx',
   output: {
     name: 'quikpik',
     sourcemap: true,
@@ -15,29 +38,28 @@ export default {
     file: production ? 'dist/quikpik.js' : 'public/build/bundle.js',
   },
   plugins: [
-    svelte({
-      // enable run-time checks when not in production
-      dev: !production,
-      // For performance reasons, we may want to consider extracting CSS to an external file:
-      // css: (css) => {
-      //   css.write(production ? "dist/quikpik.css" : "public/build/bundle.css");
-      // },
-    }),
-
-    // If you have external dependencies installed from
-    // npm, you'll most likely need these plugins. In
-    // some cases you'll need additional configuration -
-    // consult the documentation for details:
-    // https://github.com/rollup/plugins/tree/master/packages/commonjs
     resolve({
       browser: true,
-      dedupe: ['svelte'],
+      extensions: ['.js', '.jsx'],
     }),
+
     commonjs(),
+
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    }),
+
+    babel({ babelHelpers: 'runtime', plugins: ['@babel/plugin-transform-runtime'] }),
+
+    postcss({
+      config: false,
+      minimize: production,
+      plugins: [postcssImport(), autoprefixer(), postcssReporter({ clearReportedMessages: true })],
+    }),
 
     // In dev mode, call `npm run start` once
     // the bundle has been generated
-    !production && serve(),
+    !production && runNpm('start'),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
@@ -51,20 +73,3 @@ export default {
     clearScreen: false,
   },
 };
-
-function serve() {
-  let started = false;
-
-  return {
-    writeBundle() {
-      if (!started) {
-        started = true;
-
-        require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
-          stdio: ['ignore', 'inherit', 'inherit'],
-          shell: true,
-        });
-      }
-    },
-  };
-}
