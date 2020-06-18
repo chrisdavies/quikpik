@@ -22,7 +22,7 @@ npm install quikpik
 Or use unpkg:
 
 ```
-<script src="https://unpkg.com/quikpik@0.0.4/dist/quikpik.js"></script>
+<script src="https://unpkg.com/quikpik@0.0.5/dist/quikpik.js"></script>
 ```
 
 ## Usage
