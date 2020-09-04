@@ -8,7 +8,7 @@ export const ConfirmMedia = comp(
       const value = URL.createObjectURL(file);
       return { value, dispose: () => URL.revokeObjectURL(value) };
     }, file);
-    const imageRotater = file.type.startsWith('image/') && imageRotate(url);
+    const imageRotater = file.type.startsWith('image/') && imageRotate(url, file);
 
     return (
       <div class="quikpik-confirm-wrapper">
@@ -39,10 +39,7 @@ export const ConfirmMedia = comp(
               if (!imageRotater) {
                 onConfirm(file);
               }
-              imageRotater.save().then((blob) => {
-                blob.name = file.name;
-                onConfirm(blob);
-              });
+              imageRotater.save().then(onConfirm);
             }}
           >
             {confirmText}
