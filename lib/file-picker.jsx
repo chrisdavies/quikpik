@@ -1,8 +1,9 @@
 import { comp } from './comp';
 import './file-picker.css';
+import { ConfirmMedia } from './confirm-media';
 
 export const FilePicker = comp(({ uploadFile }, hooks) => {
-  const [isDropTarget, setIsDropTarget] = hooks.useState(false);
+  const [{ isDropTarget, imgFile }, setState] = hooks.useState({ isDropTarget: false });
   hooks.useEffect(() => {
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
@@ -16,11 +17,11 @@ export const FilePicker = comp(({ uploadFile }, hooks) => {
 
   function onDragOver(e) {
     e.preventDefault();
-    setIsDropTarget(true);
+    setState({ isDropTarget: true });
   }
 
   function onDragEnd() {
-    setIsDropTarget(false);
+    setState({ isDropTarget: false });
   }
 
   function onDrop(e) {
@@ -33,7 +34,24 @@ export const FilePicker = comp(({ uploadFile }, hooks) => {
   }
 
   function onPick(e) {
-    uploadFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file.type !== 'image/gif' && file.type.startsWith('image/')) {
+      setState({ isDropTarget: false, imgFile: file });
+    } else {
+      uploadFile(file);
+    }
+  }
+
+  if (imgFile) {
+    return (
+      <ConfirmMedia
+        file={imgFile}
+        cancelText="Cancel"
+        confirmText="Upload"
+        onCancel={() => setState({ isDropTarget: false })}
+        onConfirm={uploadFile}
+      />
+    );
   }
 
   return (

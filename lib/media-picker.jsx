@@ -117,16 +117,14 @@ export const MediaPicker = comp(({ mode, uploadFile }, hooks) => {
           <ElapsedTime />
         </footer>
       )}
-      {status === 'confirm' && <ConfirmMedia file={file} />}
       {status === 'confirm' && (
-        <footer class="quikpik-media-footer">
-          <button class="quikpik-media-retake" onClick={retake}>
-            Retake
-          </button>
-          <button class="quikpik-media-accept" onClick={accept}>
-            Accept &amp; upload
-          </button>
-        </footer>
+        <ConfirmMedia
+          file={file}
+          onCancel={retake}
+          onConfirm={accept}
+          cancelText="Retake"
+          confirmText="Accept & upload"
+        />
       )}
     </div>
   );
