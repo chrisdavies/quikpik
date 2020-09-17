@@ -1,6 +1,6 @@
 {
   "name": "quikpik",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "rollup -c",

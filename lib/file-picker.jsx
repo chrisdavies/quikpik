@@ -35,7 +35,11 @@ export const FilePicker = comp(({ uploadFile }, hooks) => {
 
   function onPick(e) {
     const file = e.target.files[0];
-    if (file.type !== 'image/gif' && file.type.startsWith('image/')) {
+    if (
+      file.type !== 'image/gif' &&
+      !file.type.startsWith('image/svg') &&
+      file.type.startsWith('image/')
+    ) {
       setState({ isDropTarget: false, imgFile: file });
     } else {
       uploadFile(file);
