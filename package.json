@@ -1,6 +1,8 @@
 {
   "name": "quikpik",
-  "version": "0.0.8",
+  "version": "0.0.9",
+  "main": "./dist/quikpik.js",
+  "types": "./types.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
     "build": "rollup -c",
@@ -10,7 +12,8 @@
   },
   "files": [
     "dist/quikpik.js",
-    "dist/quikpik.js.map"
+    "dist/quikpik.js.map",
+    "types.d.ts"
   ],
   "author": "Christopher Davies <github@christophilus.com>",
   "license": "MIT",
