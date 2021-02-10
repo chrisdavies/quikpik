@@ -11,6 +11,7 @@ const isSupported = mediaSupport();
  * @param {boolean} opts.customProgress
  * @param {string[]} opts.sources the allowable file sources
  * @param {function} opts.upload the upload function { file, onProgress() } => { promise, cancel() }
+ * @param {function} [opts.onClose] the callback to be called when quikpik closes
  */
 export default function quikpik(opts) {
   const root = document.createElement('div');
@@ -34,6 +35,7 @@ export default function quikpik(opts) {
     }
 
     root.remove();
+    opts.onClose && opts.onClose();
   }
 
   function upload(...args) {
