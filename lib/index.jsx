@@ -1,6 +1,7 @@
 import { render } from 'inferno';
 import { Quikpik } from './quikpik';
 import { mediaSupport } from './media-lib';
+import { createFuture } from './future';
 
 const isSupported = mediaSupport();
 
@@ -11,9 +12,9 @@ const isSupported = mediaSupport();
  * @param {boolean} opts.customProgress
  * @param {string[]} opts.sources the allowable file sources
  * @param {function} opts.upload the upload function { file, onProgress() } => { promise, cancel() }
- * @param {function} [opts.onClose] the callback to be called when quikpik closes
  */
 export default function quikpik(opts) {
+  const promise = createFuture();
   const root = document.createElement('div');
   const app = {
     close,
@@ -30,20 +31,24 @@ export default function quikpik(opts) {
   document.body.appendChild(root);
 
   function close() {
+    promise.resolve({ canceled: true });
+
     if (app.uploader) {
       app.uploader.cancel();
     }
 
     root.remove();
-    opts.onClose && opts.onClose();
   }
 
   function upload(...args) {
     app.uploader = opts.upload(...args);
+    app.uploader.promise.then(promise.resolve).catch(promise.reject);
     return app.uploader;
   }
 
   render(<Quikpik {...opts} sources={sources} close={close} upload={upload} />, root);
 
-  return { close };
+  promise.cancel = close;
+
+  return promise;
 }

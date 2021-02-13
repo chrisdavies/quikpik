@@ -18,7 +18,7 @@ function mockUpload({ file, onProgress }) {
       onProgress(progress);
 
       if (progress >= 100) {
-        resolve();
+        resolve(file.name);
       } else {
         setTimeout(mockProgress, mockProgressInterval);
       }
@@ -67,7 +67,7 @@ function Main() {
                 },
               });
             },
-          })
+          }).then((x) => console.log('done --->', x)).catch((e) => console.error('nmm.....', e))
         }
       >
         Custom progress
@@ -76,4 +76,4 @@ function Main() {
   );
 }
 
-render(<Main onComponentDidMount={() => quikpik({ upload: mockUpload })} />, document.body);
+render(<Main onComponentDidMount={() => quikpik({ upload: mockUpload }).then((x) => console.log('done:', x))} />, document.body);
