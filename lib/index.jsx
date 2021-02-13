@@ -14,6 +14,7 @@ const isSupported = mediaSupport();
  * @param {function} opts.upload the upload function { file, onProgress() } => { promise, cancel() }
  */
 export default function quikpik(opts) {
+  let result;
   const promise = createFuture();
   const root = document.createElement('div');
   const app = {
@@ -31,8 +32,8 @@ export default function quikpik(opts) {
   document.body.appendChild(root);
 
   function close() {
-    promise.resolve({ canceled: true });
-
+    promise.resolve({ canceled: !result, result });
+    
     if (app.uploader) {
       app.uploader.cancel();
     }
@@ -42,7 +43,7 @@ export default function quikpik(opts) {
 
   function upload(...args) {
     app.uploader = opts.upload(...args);
-    app.uploader.promise.then(promise.resolve).catch(promise.reject);
+    app.uploader.promise.then((x) => (result = x)).catch(promise.reject);
     return app.uploader;
   }
 

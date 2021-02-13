@@ -21,7 +21,7 @@
 .quikpik-progress-bar {
   background: #667eea;
   width: 0;
-  transition: width 0.25s, background-color 0.5s;
+  transition: width 0.25s, background-color 0.25s;
 }
 
 .quikpik-done-bar {

@@ -44,7 +44,7 @@ export const Quikpik = comp((props, hooks) => {
 
     // Give the user a bit of time to see that we've completed.
     newUploader.promise
-      .then(() => setTimeout(close, 750))
+      .then(() => setTimeout(close, 250))
       .catch((err) => {
         if (err && err.status !== 0) {
           alert('Upload failed. ' + (err.message || ''));
