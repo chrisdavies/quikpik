@@ -121,6 +121,7 @@
 }
 
 .quik-icon {
+  margin: auto;
   color: #818CF8;
   width: 4rem;
   height: 4rem;
@@ -142,6 +143,7 @@
 }
 
 .quik-confirm-item {
+  margin: auto;
   overflow: hidden;
   max-width: 100%;
   max-height: 100%;

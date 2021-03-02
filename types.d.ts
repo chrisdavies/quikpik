@@ -15,4 +15,4 @@ export default function quikpik<T>(opts: {
   requireCrop?: boolean;
   cropRatio?: number;
   upload(opts: { file: File, onProgress: (percent: number) => any }): void | ({ promise: Promise<T>, cancel: () => void });
-}): Promise<{ canceled: true } | { canceled: false, result: T }> & { cancel(): void; };
+}): Promise<T | undefined> & { cancel(): void; };
