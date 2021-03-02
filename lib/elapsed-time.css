@@ -1,8 +1,0 @@
-.quikpik-elapsed-time {
-  position: absolute;
-  left: calc(50% + 2.75rem);
-  top: 50%;
-  margin-top: -0.5rem;
-  line-height: 1;
-  opacity: 0.8;
-}

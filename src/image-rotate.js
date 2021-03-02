@@ -3,10 +3,11 @@
  * 90-degree rotation, and saving the canvas to PNG forat.
  * @param {URL} url
  * @param {File|Blob} original
+ * @param {HTMLCanvasElement} canvas
+ * @param {function} onReady
  */
-export function imageRotate(url, original) {
+export function imageRotate(url, original, canvas, onReady) {
   let angle = 0;
-  let canvas = undefined;
   let ready = false;
   const image = new Image();
 
@@ -39,19 +40,12 @@ export function imageRotate(url, original) {
     canvas.width = image.width;
     canvas.height = image.height;
     renderImage(image, canvas, angle);
+    onReady();
   });
   image.addEventListener('error', () => alert('Failed to load image.'));
   image.src = url;
 
   return {
-    setCanvas(c) {
-      if (!c || c.$rotater) {
-        return;
-      }
-      canvas = c;
-      canvas.$rotater = true;
-      renderImage(image, canvas, angle);
-    },
     save(format = 'image/png', quality = undefined) {
       if (!angle) {
         return Promise.resolve(original);
