@@ -40,6 +40,9 @@ function upload({ file, onProgress }) {
 }
 
 function showPreview(file) {
+  if (!file) {
+    return;
+  }
   console.log(file);
   let preview = document.querySelector('img.preview') || h('img.preview');
 
@@ -62,6 +65,26 @@ document.body.append(
       },
     },
     'Any file, no camera',
+  ),
+  h(
+    'button',
+    {
+      onclick(e) {
+        quikpik({
+          customProgress: true,
+          upload({ file }) {
+            showPreview(file);
+            return upload({
+              file,
+              onProgress(percent) {
+                e.target.textContent = `${percent}%`;
+              },
+            });
+          },
+        }).then(() => (e.target.textContent = `Done!`));
+      },
+    },
+    'Custom progress',
   ),
 );
 

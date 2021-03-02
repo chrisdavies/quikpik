@@ -122,20 +122,30 @@ function appContext(opts) {
   }
 
   function uploadFile(file) {
-    const uploadUi = renderUploadProgress(file);
-    setModalBody(app.root, uploadUi);
-    app.uploader = opts.upload({
-      file,
-      onProgress(progress) {
-        updateProgress(uploadUi, progress);
-      },
-    });
-    app.uploader.promise
-      .then((x) => {
-        result = x;
-        setTimeout(close, 250);
-      })
-      .catch(promise.reject);
+    if (opts.customProgress) {
+      app.root.remove();
+      app.uploader = opts.upload({
+        file,
+        onProgress() {},
+      });
+      app.uploader.promise.then((x) => promise.resolve(x)).catch(promise.reject);
+    } else {
+      const uploadUi = renderUploadProgress(file);
+      setModalBody(app.root, uploadUi);
+      app.uploader = opts.upload({
+        file,
+        onProgress(progress) {
+          updateProgress(uploadUi, progress);
+        },
+      });
+      app.uploader.promise
+        .then((x) => {
+          result = x;
+          setTimeout(close, 250);
+        })
+        .catch(promise.reject);
+    }
+
     return app.uploader;
   }
 
