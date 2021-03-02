@@ -6,8 +6,7 @@ A file picker for evergreen browsers.
 - Paste a file
 - Browse and select a file
 - Capture an image from your camera
-- Record video from your camera
-- Record audio from your microphone
+- Adjust images via crop and rotate
 
 ![The hotness](./public/screenshot.png)
 
@@ -22,7 +21,8 @@ npm install quikpik
 Or use unpkg:
 
 ```
-<script src="https://unpkg.com/quikpik@0.0.5/dist/quikpik.js"></script>
+<script src="https://unpkg.com/quikpik@0.0.15/dist/quikpik.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/quikpik@0.0.15/dist/quikpik.css"></script>
 ```
 
 ## Usage
@@ -30,7 +30,9 @@ Or use unpkg:
 Quikpik doesn't implement the upload for you, so the uploader is the one argument you must pass in. The following example shows how to upload a file to S3 using quikpik and [XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest). Here, `presigned` is an object that contains S3 presigned post data.
 
 ```js
-quikpik({
+// Result is either undefined (if the user cancels the picker)
+// or it is the value returned from your upload function.
+const result = await quikpik({
   upload({ file, onProgress }) {
     const xhr = new XMLHttpRequest();
     const data = new FormData();
