@@ -8,6 +8,11 @@ import { renderWebcamCapture } from './webcam-capture';
 import './index.css';
 
 function appContext(opts) {
+  opts = {
+    sources: ['filepicker', 'takephoto'],
+    ...opts,
+  };
+
   // The result of the upload, if it succeeded
   let result;
 
@@ -87,7 +92,7 @@ function appContext(opts) {
           onCancel() {
             setModalBody(
               app.root,
-              renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept }),
+              renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept, sources }),
             );
           },
           onConfirm(pic) {
@@ -107,7 +112,10 @@ function appContext(opts) {
       renderWebcamCapture({
         onPickFile,
         onCancel() {
-          setModalBody(app.root, renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept }));
+          setModalBody(
+            app.root,
+            renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept, sources }),
+          );
         },
       }),
     );

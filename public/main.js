@@ -5,12 +5,7 @@ import quikpik from '../src';
 function upload({ file, onProgress }) {
   console.log('Uploading file:', file.name, 'type:', file.type);
 
-  const preview = h('img', { src: URL.createObjectURL(file) });
-  preview.style.maxWidth = '800px';
-  preview.style.maxHeight = '800px';
-  document.body.prepend(preview);
-
-  const mockProgressInterval = 250;
+  const mockProgressInterval = 50;
   let progress = 0;
   let resolve, reject, timeout;
 
@@ -44,6 +39,30 @@ function upload({ file, onProgress }) {
   };
 }
 
-quikpik({ accept: 'image/*', upload, requireCrop: true, cropRatio: 1 }).then((result) =>
-  console.log('done with', result.name),
+function showPreview(file) {
+  console.log(file);
+  let preview = document.querySelector('img.preview') || h('img.preview');
+
+  if (preview.src) {
+    URL.revokeObjectURL(preview.src);
+  }
+
+  preview.src = URL.createObjectURL(file);
+  preview.style.maxWidth = '800px';
+  preview.style.maxHeight = '800px';
+  document.body.prepend(preview);
+}
+
+document.body.append(
+  h(
+    'button',
+    {
+      onclick() {
+        quikpik({ upload, sources: ['filepicker'] }).then(showPreview);
+      },
+    },
+    'Any file, no camera',
+  ),
 );
+
+quikpik({ accept: 'image/*', upload, requireCrop: true, cropRatio: 1 }).then(showPreview);

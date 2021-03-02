@@ -1,7 +1,10 @@
 import { h, raw } from './dom';
 import { icoCamera } from './ico';
+import { mediaSupport } from './media-lib';
 
-export function renderFilePicker({ onPickFile, accept, onTakePhoto }) {
+export function renderFilePicker({ onPickFile, accept, sources, onTakePhoto }) {
+  const enablePhoto = mediaSupport().takephoto && sources.includes('takephoto');
+
   const el = h(
     'label.quik-drop-target.quik-content',
     {
@@ -41,17 +44,18 @@ export function renderFilePicker({ onPickFile, accept, onTakePhoto }) {
           ),
           'Choose File',
         ),
-        h(
-          'button.quik-footer-btn',
-          {
-            onclick(e) {
-              e.preventDefault();
-              onTakePhoto();
+        enablePhoto &&
+          h(
+            'button.quik-footer-btn',
+            {
+              onclick(e) {
+                e.preventDefault();
+                onTakePhoto();
+              },
             },
-          },
-          icoCamera(),
-          'Take Photo',
-        ),
+            icoCamera(),
+            'Take Photo',
+          ),
       ),
     ),
   );
