@@ -1,11 +1,11 @@
 {
   "name": "quikpik",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "main": "./dist/quikpik.js",
   "types": "./types.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "NODE_ENV=production esbuild src/index.js --global-name=quikpik --bundle --outfile=dist/quikpik.js --sourcemap=external --minify --define:process.env.NODE_ENV=\"'production'\"",
+    "build": "NODE_ENV=production esbuild src/index.js --global-name=quikpik --bundle --outfile=dist/quikpik.js --sourcemap=external --minify --target=es6 --define:process.env.NODE_ENV=\"'production'\"",
     "start": "esbuild public/main.js --outfile=public/build/bundle.js --bundle --servedir=public",
     "test": ""
   },
