@@ -1,6 +1,6 @@
 {
   "name": "quikpik",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "main": "./dist/quikpik-cjs.js",
   "types": "./types.d.ts",
   "scripts": {
@@ -15,6 +15,9 @@
     "dist/quikpik.js",
     "dist/quikpik.js.map",
     "dist/quikpik.css",
+    "dist/quikpik-cjs.js",
+    "dist/quikpik-cjs.js.map",
+    "dist/quikpik-cjs.css",
     "types.d.ts"
   ],
   "author": "Christopher Davies <github@christophilus.com>",
