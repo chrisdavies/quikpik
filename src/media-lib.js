@@ -28,7 +28,7 @@ function getSupportedMimeType(opts) {
   const mimeTypes = opts.video
     ? ['video/mpeg', 'video/webm']
     : ['audio/mpeg', 'audio/webm', 'audio/ogg', 'audio/wav'];
-  const [mimeType] = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t));
+  const mimeType = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t))[0];
 
   if (!mimeType) {
     throw new Error('No supported mime type found.');

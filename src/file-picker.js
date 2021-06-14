@@ -2,7 +2,11 @@ import { h, raw } from './dom';
 import { icoCamera } from './ico';
 import { mediaSupport } from './media-lib';
 
-export function renderFilePicker({ onPickFile, accept, sources, onTakePhoto }) {
+export function renderFilePicker(opts) {
+  const onPickFile = opts.onPickFile,
+    accept = opts.accept,
+    sources = opts.sources,
+    onTakePhoto = opts.onTakePhoto;
   const enablePhoto = mediaSupport().takephoto && sources.includes('takephoto');
 
   const el = h(

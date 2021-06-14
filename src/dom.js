@@ -47,7 +47,9 @@ export function raw(html) {
  * @returns {HTMLElement}
  */
 export function h(tag, ...args) {
-  const [tagName, ...classes] = tag.split('.');
+  const pieces = tag.split('.');
+  const tagName = pieces[0];
+  const classes = pieces.slice(1);
   const el =
     tagName === 'svg'
       ? document.createElementNS('http://www.w3.org/2000/svg', 'svg')

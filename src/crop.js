@@ -28,57 +28,62 @@ function createCropperElement(canvas) {
 /**
  * Resize by growing to the left.
  */
-const left = ({ e, bounds, parentBounds }) => ({
-  left: e.clientX - parentBounds.x,
-  width: bounds.right - e.clientX,
+const left = (opts) => ({
+  left: opts.e.clientX - opts.parentBounds.x,
+  width: opts.bounds.right - opts.e.clientX,
 });
 
 /**
  * Resize by growing to the right.
  */
-const right = ({ e, bounds, newSize, aspectRatio }) => {
+const right = (opts) => {
   return {
     width:
       // If we have a newSize and an aspectRatio to enforce,
       // then we're giving the height precedent, and the width
       // is a derivative value.
-      aspectRatio && newSize ? newSize.height * (1 / aspectRatio) : e.clientX - bounds.x,
+      opts.aspectRatio && opts.newSize
+        ? opts.newSize.height * (1 / opts.aspectRatio)
+        : opts.e.clientX - opts.bounds.x,
   };
 };
 
 /**
  * Resize by growing upward.
  */
-const up = ({ e, bounds, parentBounds, newSize, aspectRatio }) => {
+const up = (opts) => {
   // Derive our height based on our width (newSize). If newSize
   // is falsy, then height takes precedent over width and viceversa.
-  if (aspectRatio && newSize) {
-    const height = newSize.width * aspectRatio;
+  if (opts.aspectRatio && opts.newSize) {
+    const height = opts.newSize.width * opts.aspectRatio;
     return {
-      top: bounds.bottom - height - parentBounds.y,
+      top: opts.bounds.bottom - height - opts.parentBounds.y,
       height,
     };
   }
 
   return {
-    top: e.clientY - parentBounds.y,
-    height: bounds.bottom - e.clientY,
+    top: opts.e.clientY - opts.parentBounds.y,
+    height: opts.bounds.bottom - opts.e.clientY,
   };
 };
 
 /**
  * Resize by growing downward.
  */
-const down = ({ e, bounds, newSize, aspectRatio }) => ({
-  height: aspectRatio && newSize ? aspectRatio * newSize.width : e.clientY - bounds.y,
+const down = (opts) => ({
+  height:
+    opts.aspectRatio && opts.newSize
+      ? opts.aspectRatio * opts.newSize.width
+      : opts.e.clientY - opts.bounds.y,
 });
 
 /**
  * Adjust the cropper by moving it.
  */
-const move = ({ e, parentBounds, offsetY, offsetX }) => ({
-  top: e.clientY - parentBounds.y - offsetY,
-  left: e.clientX - parentBounds.x - offsetX,
+const move = (opts) => ({
+  top: opts.e.clientY - opts.parentBounds.y - opts.offsetY,
+  left: opts.e.clientX - opts.parentBounds.x - opts.offsetX,
 });
 
 /**
@@ -89,7 +94,10 @@ const noop = () => {};
 /**
  * Crop the specified image.
  */
-function cropImage({ image, cropBounds, scale }) {
+function cropImage(opts) {
+  const image = opts.image,
+    cropBounds = opts.cropBounds,
+    scale = opts.scale;
   const canvas = h('canvas');
   canvas.width = cropBounds.width * scale;
   canvas.height = cropBounds.height * scale;

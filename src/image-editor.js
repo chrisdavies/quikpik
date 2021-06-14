@@ -13,16 +13,15 @@ function loadImage(blob, callback) {
   });
 }
 
-export function renderImageEditor({
-  url,
-  file,
-  cancelText,
-  confirmText,
-  onCancel,
-  onConfirm,
-  requireCrop,
-  cropRatio,
-}) {
+export function renderImageEditor(opts) {
+  const url = opts.url,
+    file = opts.file,
+    cancelText = opts.cancelText,
+    confirmText = opts.confirmText,
+    onCancel = opts.onCancel,
+    onConfirm = opts.onConfirm,
+    requireCrop = opts.requireCrop,
+    cropRatio = opts.cropRatio;
   let cropper;
   const result = h('.quik-content-wrapper', h('.quik-text', 'Loading...'));
   const canvas = h('canvas.quik-confirm-item');

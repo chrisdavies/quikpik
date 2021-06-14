@@ -2,10 +2,10 @@ import { h } from './dom';
 import { createRecorder } from './media-lib';
 import { icoCamera } from './ico';
 
-function renderLiveVideo({ recorder, onPickFile, onError }) {
+function renderLiveVideo(opts) {
   const video = h('video.quik-vid.quik-content');
 
-  video.srcObject = recorder.liveSrc();
+  video.srcObject = opts.recorder.liveSrc();
   video.muted = true;
   video.controls = false;
   video.play();
@@ -13,7 +13,9 @@ function renderLiveVideo({ recorder, onPickFile, onError }) {
   return video;
 }
 
-export function renderWebcamCapture({ onPickFile, onCancel }) {
+export function renderWebcamCapture(opts) {
+  const onPickFile = opts.onPickFile,
+    onCancel = opts.onCancel;
   const el = h(
     '.quik-media',
     h('p.quik-info.quik-content', 'Waiting for your camera...'),
