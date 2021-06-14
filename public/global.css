@@ -64,3 +64,8 @@ button:not(:disabled):active {
 button:focus {
   border-color: #666;
 }
+
+img.preview {
+  max-width: min(100vw - 1rem, 800px);
+  max-height: min(100vh - 1rem, 800px);
+}

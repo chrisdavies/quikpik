@@ -92,7 +92,12 @@ function appContext(opts) {
           onCancel() {
             setModalBody(
               app.root,
-              renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept, sources }),
+              renderFilePicker({
+                onPickFile,
+                onTakePhoto,
+                accept: app.accept,
+                sources: app.sources,
+              }),
             );
           },
           onConfirm(pic) {
@@ -114,7 +119,7 @@ function appContext(opts) {
         onCancel() {
           setModalBody(
             app.root,
-            renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept, sources }),
+            renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept, sources: app.sources }),
           );
         },
       }),

@@ -9,6 +9,7 @@
   right: 0;
   bottom: 0;
   max-height: 100vh;
+  max-width: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,6 +141,7 @@
   display: flex;
   flex-grow: 1;
   flex-direction: column;
+  max-width: 100%;
 }
 
 .quik-confirm-item {
@@ -249,4 +251,25 @@
 
 .quik-done-bar {
   background: #48bb78;
+}
+
+@media only screen and (max-width: 768px) {
+  .quik-body {
+    min-width: unset;
+    height: unset;
+    max-height: calc(100vh - 3rem);
+  }
+
+  .quik-footer {
+    flex-flow: wrap;
+  }
+
+  .quik-footer-btn {
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .quik-footer-btn-primary {
+    width: 100%;
+  }
 }

@@ -51,8 +51,6 @@ function showPreview(file) {
   }
 
   preview.src = URL.createObjectURL(file);
-  preview.style.maxWidth = '800px';
-  preview.style.maxHeight = '800px';
   document.body.prepend(preview);
 }
 

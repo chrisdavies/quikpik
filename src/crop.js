@@ -122,15 +122,26 @@ function cropImage({ image, cropBounds, scale }) {
  */
 export function attachCropper(canvas, aspectRatio) {
   const cropper = createCropperElement(canvas);
+  const normalizeEvent = (e) => {
+    const touch = e.changedTouches && e.changedTouches[0];
+    if (touch) {
+      e.clientX = touch.clientX;
+      e.clientY = touch.clientY;
+    }
+    return e;
+  };
 
   // Apply the specified adjustment function during drag operations.
   const adjuster = (fn) => (e) => {
+    e = normalizeEvent(e);
     const parent = cropper.offsetParent;
     const bounds = cropper.getBoundingClientRect();
     const parentBounds = parent.getBoundingClientRect();
-    const { offsetY, offsetX } = e;
+    const offsetY = e.clientY - bounds.y;
+    const offsetX = e.clientX - bounds.x;
 
     function mousemove(e) {
+      e = normalizeEvent(e);
       const props = fn({
         e,
         offsetY,
@@ -142,11 +153,19 @@ export function attachCropper(canvas, aspectRatio) {
       Object.keys(props).forEach((k) => (cropper.style[k] = props[k] + 'px'));
     }
 
-    parent.addEventListener('mousemove', mousemove);
-    document.addEventListener('mouseup', function mouseup(e) {
+    function mouseup(e) {
       parent.removeEventListener('mousemove', mousemove);
+      parent.removeEventListener('touchmove', mousemove);
       document.removeEventListener('mouseup', mouseup);
-    });
+      document.removeEventListener('touchend', mouseup);
+      document.removeEventListener('touchcancel', mouseup);
+    }
+
+    parent.addEventListener('mousemove', mousemove);
+    parent.addEventListener('touchmove', mousemove);
+    document.addEventListener('mouseup', mouseup);
+    document.addEventListener('touchend', mouseup, true);
+    document.addEventListener('touchcancel', mouseup, true);
   };
 
   // Resize the cropper based on the adjustment functions.
@@ -173,8 +192,8 @@ export function attachCropper(canvas, aspectRatio) {
   // The action which will be taken when the user drags within the cropper.
   let dragAction = adjusters.move;
 
-  // Change the caret and drag behavior based on where in the cropper we are.
-  cropper.addEventListener('mousemove', (e) => {
+  function changeAdjuster(e) {
+    e = normalizeEvent(e);
     const bounds = cropper.getBoundingClientRect();
     const edgeX = Math.max(10, Math.floor(bounds.width / 5));
     const edgeY = Math.max(10, Math.floor(bounds.height / 5));
@@ -194,15 +213,21 @@ export function attachCropper(canvas, aspectRatio) {
       cropper.style.cursor = 'grabbing';
       dragAction = adjusters.move;
     }
-  });
+  }
+
+  // Change the caret and drag behavior based on where in the cropper we are.
+  cropper.addEventListener('mousemove', changeAdjuster);
 
   // On mouse down, we'll begin the crop adjustment behavior.
-  cropper.addEventListener('mousedown', (e) => {
+  const dragstart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
+    changeAdjuster(e);
     dragAction(e);
-  });
+  };
+
+  cropper.addEventListener('touchstart', dragstart);
+  cropper.addEventListener('mousedown', dragstart);
 
   /**
    * Remove the cropper from the DOM.
