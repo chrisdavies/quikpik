@@ -61,14 +61,6 @@
   overflow: hidden;
 }
 
-@media only screen and (max-width: 600px) {
-  .quik-body {
-    padding: 0;
-    width: calc(100% - 2rem);
-    height: calc(100% - 2rem);
-  }
-}
-
 .quik-body-fit {
   height: auto;
   max-width: 24rem;
@@ -174,6 +166,7 @@
   margin-top: 1rem;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 .quik-footer-btn {
@@ -253,11 +246,16 @@
   background: #48bb78;
 }
 
+.quikpik video {
+  width: 100%;
+}
+
 @media only screen and (max-width: 768px) {
   .quik-body {
     min-width: unset;
     height: unset;
     max-height: calc(100vh - 3rem);
+    width: calc(100% - 2rem);
   }
 
   .quik-footer {
@@ -269,7 +267,7 @@
     padding: 0.25rem 0.5rem;
   }
 
-  .quik-footer-btn-primary {
+  .quik-footer-btn {
     width: 100%;
   }
 }

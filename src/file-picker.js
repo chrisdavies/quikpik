@@ -1,13 +1,26 @@
 import { h, raw } from './dom';
-import { icoCamera } from './ico';
+import { icoCamera, icoVideo, icoMic } from './ico';
 import { mediaSupport } from './media-lib';
 
 export function renderFilePicker(opts) {
   const onPickFile = opts.onPickFile,
     accept = opts.accept,
     sources = opts.sources,
-    onTakePhoto = opts.onTakePhoto;
-  const enablePhoto = mediaSupport().takephoto && sources.includes('takephoto');
+    beginCaptureMedia = opts.beginCaptureMedia;
+  const supportedMedia = mediaSupport(sources);
+  const mediaButton = (type, ico, label) =>
+    supportedMedia[type] &&
+    h(
+      'button.quik-footer-btn.quik-main-footer-btn',
+      {
+        onclick(e) {
+          e.preventDefault();
+          beginCaptureMedia(type);
+        },
+      },
+      ico(),
+      label,
+    );
 
   const el = h(
     'label.quik-drop-target.quik-content',
@@ -48,18 +61,9 @@ export function renderFilePicker(opts) {
           ),
           'Choose File',
         ),
-        enablePhoto &&
-          h(
-            'button.quik-footer-btn',
-            {
-              onclick(e) {
-                e.preventDefault();
-                onTakePhoto();
-              },
-            },
-            icoCamera(),
-            'Take Photo',
-          ),
+        mediaButton('takephoto', icoCamera, 'Take Photo'),
+        mediaButton('takevideo', icoVideo, 'Record Video'),
+        mediaButton('takeaudio', icoMic, 'Record Audio'),
       ),
     ),
   );

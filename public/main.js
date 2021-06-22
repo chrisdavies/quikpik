@@ -86,4 +86,11 @@ document.body.append(
   ),
 );
 
-quikpik({ accept: 'image/*', upload, requireCrop: true, cropRatio: 1 }).then(showPreview);
+quikpik({
+  // accept: 'image/*',
+  // requireCrop: true,
+  // cropRatio: 1
+  sources: ['filepicker', 'takephoto', 'takevideo', 'takeaudio'],
+  upload,
+  maxDuration: 2,
+}).then(showPreview);

@@ -2,11 +2,7 @@ import { h } from './dom';
 import { renderFilePicker } from './file-picker';
 
 export function renderPickerModal(opts) {
-  const close = opts.close,
-    onPickFile = opts.onPickFile,
-    accept = opts.accept,
-    onTakePhoto = opts.onTakePhoto,
-    sources = opts.sources;
+  const close = opts.close;
   const el = h(
     '.quikpik',
     { onclick: close, ontouchend: close },
@@ -20,7 +16,7 @@ export function renderPickerModal(opts) {
           e.stopPropagation();
         },
       },
-      renderFilePicker({ onPickFile, accept, onTakePhoto, sources }),
+      renderFilePicker(opts),
     ),
   );
 

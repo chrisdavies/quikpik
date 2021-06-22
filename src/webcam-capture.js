@@ -1,6 +1,9 @@
 import { h } from './dom';
 import { createRecorder } from './media-lib';
-import { icoCamera } from './ico';
+import { icoCamera, icoMic, icoVideo } from './ico';
+
+// The default maximum duration, in minutes.
+const MAX_DURATION = 10;
 
 function renderLiveVideo(opts) {
   const video = h('video.quik-vid.quik-content');
@@ -13,35 +16,102 @@ function renderLiveVideo(opts) {
   return video;
 }
 
-export function renderWebcamCapture(opts) {
-  const onPickFile = opts.onPickFile,
-    onCancel = opts.onCancel;
+/**
+ * Render the recording progress. When maxDuration has been hit, this calls onComplete.
+ */
+function renderRecordingProgress(label, maxDuration, onComplete) {
+  const startTime = Date.now();
+  const maxDurationSeconds = maxDuration * 60;
+  const progressText = (seconds) => {
+    return `${Math.floor(seconds / 60)}:${`00${seconds % 60}`.slice(-2)} / ${maxDuration}:00`;
+  };
+  let handle;
+  const bar = h('span.quik-progress-bar', { style: 'width: 0%' });
+  const percent = h('span.quik-percent', progressText(0));
   const el = h(
-    '.quik-media',
-    h('p.quik-info.quik-content', 'Waiting for your camera...'),
-    h(
-      'footer.quik-footer',
-      h('button.quik-footer-btn.quik-footer-btn-secondary', { onclick: onCancel }, 'Cancel'),
-    ),
+    '.quik-progress',
+    h('span.quik-progress-text', h('span.quik-filename', label), percent),
+    h('span.quik-progress-bar-wrapper', bar),
   );
 
-  const onError = (err) => {
-    el.firstChild.replaceWith(h('p.quik-error', err.toString()));
-  };
+  (() => {
+    handle = setTimeout(function tick() {
+      const seconds = Math.floor((Date.now() - startTime) / 1000);
+      percent.textContent = progressText(seconds);
+      bar.style.width = `${Math.floor((seconds * 100) / maxDurationSeconds)}%`;
+      if (seconds >= maxDurationSeconds) {
+        onComplete();
+        return;
+      }
+      // A poor man's dispose
+      if (el.isConnected) {
+        setTimeout(tick, 1000);
+      }
+    }, 1000);
+  })();
 
-  createRecorder({ video: true, audio: false })
+  return el;
+}
+
+export function renderMediaCapture(opts) {
+  const onPickFile = opts.onPickFile,
+    maxDuration = opts.maxDuration || MAX_DURATION,
+    onCancel = opts.onCancel;
+  type = opts.type;
+  let recordingProgress;
+  const message = h(
+    'p.quik-info.quik-content',
+    `Waiting for your ${type === 'takeaudio' ? 'microphone' : 'camera'}...`,
+  );
+  const footer = h(
+    'footer.quik-footer',
+    h('button.quik-footer-btn.quik-footer-btn-secondary', { onclick: onCancel }, 'Cancel'),
+  );
+  const el = h('.quik-media', message, footer);
+  const isDisposed = () => !el.isConnected;
+  const onError = (err) => message.replaceWith(h('p.quik-error', err.toString()));
+
+  createRecorder({ video: type !== 'takeaudio', audio: type !== 'takephoto', isDisposed })
     .then((recorder) => {
-      el.firstChild.replaceWith(renderLiveVideo({ recorder, onPickFile, onError }));
-      el.lastChild.appendChild(
+      const onComplete = () => {
+        message.textContent = 'Generating preview...';
+        recordingProgress && recordingProgress.remove();
+        const promise = type === 'takephoto' ? recorder.capturePhoto() : recorder.endMediaCapture();
+        promise.then(onPickFile).catch(onError);
+      };
+      message.textContent =
+        type === 'takephoto'
+          ? ''
+          : `Ready to record. You can record up to ${maxDuration} minutes of ${
+              type === 'takeaudio' ? 'audio' : 'video'
+            }.`;
+      if (type !== 'takeaudio') {
+        el.insertBefore(renderLiveVideo({ recorder, onPickFile, onError }), message);
+      }
+      footer.appendChild(
         h(
           'button.quik-footer-btn.quik-footer-btn-primary',
           {
-            onclick() {
-              recorder.capturePhoto().then(onPickFile).catch(onError);
+            onclick(e) {
+              if (type === 'takephoto' || recordingProgress) {
+                e.target.disabled = true;
+                onComplete();
+              } else {
+                recorder.beginMediaCapture();
+                recordingProgress = renderRecordingProgress(
+                  'Recording...',
+                  maxDuration,
+                  onComplete,
+                );
+                message.textContent = '';
+                el.insertBefore(recordingProgress, footer);
+                e.target.innerHTML = '';
+                e.target.append(icoMic(), h('span', 'Stop recording'));
+              }
             },
           },
-          icoCamera(),
-          'Take photo',
+          type === 'takephoto' ? icoCamera() : type === 'takeaudio' ? icoMic() : icoVideo(),
+          type === 'takephoto' ? 'Take Photo' : 'Begin Recording',
         ),
       );
     })

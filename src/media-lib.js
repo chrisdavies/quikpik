@@ -13,20 +13,22 @@
   document.head.appendChild(polyfill);
 })();
 
-export function mediaSupport() {
+export function mediaSupport(sources) {
   const supportsVideoAndAudio = !!window.MediaRecorder;
 
   return {
     filepicker: true,
-    takephoto: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
-    takevideo: supportsVideoAndAudio,
-    takeaudio: supportsVideoAndAudio,
+    takephoto:
+      sources.includes('takephoto') &&
+      !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    takevideo: sources.includes('takevideo') && supportsVideoAndAudio,
+    takeaudio: sources.includes('takeaudio') && supportsVideoAndAudio,
   };
 }
 
 function getSupportedMimeType(opts) {
   const mimeTypes = opts.video
-    ? ['video/mpeg', 'video/webm']
+    ? ['video/mp4', 'video/mpeg', 'video/webm']
     : ['audio/mpeg', 'audio/webm', 'audio/ogg', 'audio/wav'];
   const mimeType = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t))[0];
 
@@ -88,6 +90,9 @@ export function createRecorder(opts) {
   function endMediaCapture() {
     return new Promise((resolve, reject) => {
       mediaRecorder.onstop = () => {
+        if (opts.isDisposed()) {
+          reject(new Error(`Disposed.`));
+        }
         try {
           const blob = new Blob(recordedChunks, {
             type: getSupportedMimeType(opts),
@@ -101,6 +106,17 @@ export function createRecorder(opts) {
       mediaRecorder.stop();
     });
   }
+
+  // This is a poor man's dispose mechanism, but it's good enough.
+  setTimeout(function autodispose() {
+    if (opts.isDisposed()) {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      return;
+    }
+    setTimeout(autodispose, 1000);
+  }, 1000);
 
   return navigator.mediaDevices.getUserMedia(opts).then((newStream) => {
     stream = newStream;

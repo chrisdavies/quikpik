@@ -4,7 +4,8 @@ import { on } from './dom';
 import { renderUploadProgress, updateProgress } from './upload-progress';
 import { renderImageEditor } from './image-editor';
 import { renderFilePicker } from './file-picker';
-import { renderWebcamCapture } from './webcam-capture';
+import { renderMediaConfirmation } from './media-confirmation';
+import { renderMediaCapture } from './webcam-capture';
 import './index.css';
 
 function appContext(opts) {
@@ -45,7 +46,7 @@ function appContext(opts) {
     close,
     uploadFile,
     onPickFile,
-    onTakePhoto,
+    beginCaptureMedia,
     promise,
 
     // This gets defined later...
@@ -57,6 +58,18 @@ function appContext(opts) {
   };
 
   app.root = renderPickerModal(app);
+
+  function resetPicker() {
+    setModalBody(
+      app.root,
+      renderFilePicker({
+        onPickFile,
+        beginCaptureMedia,
+        accept: app.accept,
+        sources: app.sources,
+      }),
+    );
+  }
 
   // Close the picker and clean up all the things.
   function close() {
@@ -89,20 +102,8 @@ function appContext(opts) {
           file,
           cancelText: 'Cancel',
           confirmText: 'Accept & upload',
-          onCancel() {
-            setModalBody(
-              app.root,
-              renderFilePicker({
-                onPickFile,
-                onTakePhoto,
-                accept: app.accept,
-                sources: app.sources,
-              }),
-            );
-          },
-          onConfirm(pic) {
-            uploadFile(pic);
-          },
+          onCancel: resetPicker,
+          onConfirm: uploadFile,
         }),
       );
       return;
@@ -111,17 +112,32 @@ function appContext(opts) {
     uploadFile(file);
   }
 
-  function onTakePhoto() {
+  function onMediaCaptured(file) {
+    // Show the audio / video preview / confirmation screen
+    const url = URL.createObjectURL(file);
+    disposers.push(() => URL.revokeObjectURL(url));
     setModalBody(
       app.root,
-      renderWebcamCapture({
-        onPickFile,
-        onCancel() {
-          setModalBody(
-            app.root,
-            renderFilePicker({ onPickFile, onTakePhoto, accept: app.accept, sources: app.sources }),
-          );
-        },
+      renderMediaConfirmation({
+        ...opts,
+        url,
+        file,
+        cancelText: 'Cancel',
+        confirmText: 'Accept & upload',
+        onCancel: resetPicker,
+        onConfirm: uploadFile,
+      }),
+    );
+  }
+
+  function beginCaptureMedia(type) {
+    setModalBody(
+      app.root,
+      renderMediaCapture({
+        type,
+        onPickFile: type === 'takephoto' ? onPickFile : onMediaCaptured,
+        onCancel: resetPicker,
+        maxDuration: app.maxDuration,
       }),
     );
   }
