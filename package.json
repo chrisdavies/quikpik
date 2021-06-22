@@ -1,6 +1,6 @@
 {
   "name": "quikpik",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "main": "./dist/quikpik-cjs.js",
   "types": "./types.d.ts",
   "scripts": {
