@@ -5,14 +5,14 @@ export function renderPickerModal(opts) {
   const close = opts.close;
   const el = h(
     '.quikpik',
-    { onclick: close, ontouchend: close },
+    { onmousedown: close, ontouchstart: close },
     h(
       'div.quik-body',
       {
-        onclick(e) {
+        onmousedown(e) {
           e.stopPropagation();
         },
-        ontouchend(e) {
+        ontouchstart(e) {
           e.stopPropagation();
         },
       },
