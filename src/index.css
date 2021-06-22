@@ -148,6 +148,7 @@
 */
 
 .quik-crop {
+  box-sizing: border-box;
   border: 1px solid black;
   box-shadow: inset 0 0 1px 1px white, 0 0 0 10000px rgba(0, 0, 0, 0.25);
   position: absolute;

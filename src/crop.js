@@ -1,10 +1,13 @@
 /**
  * Image cropping logic. This comes into play when the user clicks the
  * crop option in the image editor, or if the caller specifies that
- * crop is required for an image.
+ * crop is required for an image. This code is very edgecasey, so
+ * buyer beware. It's got a lot of code that could be
+ * deduplicated / tidied up, but the previous attempt
+ * at that left bugs.
  */
 
-import { h } from './dom';
+import { on, h } from './dom';
 
 /**
  * Consts, min height and width are used to prevent us from
@@ -12,84 +15,6 @@ import { h } from './dom';
  */
 const minHeight = 32;
 const minWidth = 32;
-
-/**
- * @param {HTMLCanvasElement} canvas the canvas to which the cropper will be attached
- */
-function createCropperElement(canvas) {
-  const container = canvas.parentElement;
-  const cropper = h('.quik-crop');
-
-  container.appendChild(cropper);
-
-  return cropper;
-}
-
-/**
- * Resize by growing to the left.
- */
-const left = (opts) => ({
-  left: opts.e.clientX - opts.parentBounds.x,
-  width: opts.bounds.right - opts.e.clientX,
-});
-
-/**
- * Resize by growing to the right.
- */
-const right = (opts) => {
-  return {
-    width:
-      // If we have a newSize and an aspectRatio to enforce,
-      // then we're giving the height precedent, and the width
-      // is a derivative value.
-      opts.aspectRatio && opts.newSize
-        ? opts.newSize.height * (1 / opts.aspectRatio)
-        : opts.e.clientX - opts.bounds.x,
-  };
-};
-
-/**
- * Resize by growing upward.
- */
-const up = (opts) => {
-  // Derive our height based on our width (newSize). If newSize
-  // is falsy, then height takes precedent over width and viceversa.
-  if (opts.aspectRatio && opts.newSize) {
-    const height = opts.newSize.width * opts.aspectRatio;
-    return {
-      top: opts.bounds.bottom - height - opts.parentBounds.y,
-      height,
-    };
-  }
-
-  return {
-    top: opts.e.clientY - opts.parentBounds.y,
-    height: opts.bounds.bottom - opts.e.clientY,
-  };
-};
-
-/**
- * Resize by growing downward.
- */
-const down = (opts) => ({
-  height:
-    opts.aspectRatio && opts.newSize
-      ? opts.aspectRatio * opts.newSize.width
-      : opts.e.clientY - opts.bounds.y,
-});
-
-/**
- * Adjust the cropper by moving it.
- */
-const move = (opts) => ({
-  top: opts.e.clientY - opts.parentBounds.y - opts.offsetY,
-  left: opts.e.clientX - opts.parentBounds.x - opts.offsetX,
-});
-
-/**
- * A function which does nothing, used to prevent undefined checks.
- */
-const noop = () => {};
 
 /**
  * Crop the specified image.
@@ -124,144 +49,277 @@ function cropImage(opts) {
 }
 
 /**
- * Attach a crop UI to the specified canvas.
  * @param {HTMLCanvasElement} canvas the canvas to which the cropper will be attached
- * @param {number} aspectRatio if specified, the cropper height will be width * aspectRatio
  */
-export function attachCropper(canvas, aspectRatio) {
-  const cropper = createCropperElement(canvas);
-  const normalizeEvent = (e) => {
-    const touch = e.changedTouches && e.changedTouches[0];
-    if (touch) {
-      e.clientX = touch.clientX;
-      e.clientY = touch.clientY;
-    }
-    return e;
-  };
+function createCropperElement(canvas) {
+  const container = canvas.parentElement;
+  const cropper = h('.quik-crop');
 
-  // Apply the specified adjustment function during drag operations.
-  const adjuster = (fn) => (e) => {
-    e = normalizeEvent(e);
-    const parent = cropper.offsetParent;
-    const bounds = cropper.getBoundingClientRect();
-    const parentBounds = parent.getBoundingClientRect();
-    const offsetY = e.clientY - bounds.y;
-    const offsetX = e.clientX - bounds.x;
+  container.appendChild(cropper);
 
-    function mousemove(e) {
-      e = normalizeEvent(e);
-      const props = fn({
-        e,
-        offsetY,
-        offsetX,
-        bounds,
-        parentBounds,
-        aspectRatio,
-      });
-      Object.keys(props).forEach((k) => (cropper.style[k] = props[k] + 'px'));
-    }
+  return cropper;
+}
 
-    function mouseup(e) {
-      parent.removeEventListener('mousemove', mousemove);
-      parent.removeEventListener('touchmove', mousemove);
-      document.removeEventListener('mouseup', mouseup);
-      document.removeEventListener('touchend', mouseup);
-      document.removeEventListener('touchcancel', mouseup);
-    }
+function normalizeEvent(e) {
+  const touch = e.changedTouches && e.changedTouches[0];
+  if (touch) {
+    e.clientX = touch.clientX;
+    e.clientY = touch.clientY;
+  }
+  return e;
+}
 
-    parent.addEventListener('mousemove', mousemove);
-    parent.addEventListener('touchmove', mousemove);
-    document.addEventListener('mouseup', mouseup);
-    document.addEventListener('touchend', mouseup, true);
-    document.addEventListener('touchcancel', mouseup, true);
-  };
+function getDirection(e, cropper) {
+  e = normalizeEvent(e);
 
-  // Resize the cropper based on the adjustment functions.
-  const resizer = (adjustA, adjustB) =>
-    adjuster((opts) => {
-      const newSize = adjustA(opts);
-      Object.assign(newSize, adjustB({ ...opts, newSize }));
-      return newSize.width < minWidth || newSize.height < minHeight ? {} : newSize;
-    });
+  const bounds = cropper.getBoundingClientRect();
+  const edgeX = Math.max(10, Math.floor(bounds.width / 5));
+  const edgeY = Math.max(10, Math.floor(bounds.height / 5));
+  const isWest = e.clientX < bounds.left + edgeY;
+  const isEast = e.clientX > bounds.right - edgeX;
+  const isNorth = e.clientY < bounds.top + edgeY;
+  const isSouth = e.clientY > bounds.bottom - edgeY;
+  const yDirection = isNorth ? 'n' : isSouth ? 's' : '';
+  const xDirection = isEast ? 'e' : isWest ? 'w' : '';
+  const direction = yDirection + xDirection;
 
-  // Functions which adjust the cropper on drag
-  const adjusters = {
-    se: resizer(right, down),
-    sw: resizer(left, down),
-    ne: resizer(right, up),
-    nw: resizer(left, up),
-    s: resizer(down, aspectRatio ? right : noop),
-    e: resizer(right, aspectRatio ? down : noop),
-    n: resizer(up, aspectRatio ? right : noop),
-    w: resizer(left, aspectRatio ? down : noop),
-    move: adjuster(move),
-  };
+  return direction || 'move';
+}
 
-  // The action which will be taken when the user drags within the cropper.
-  let dragAction = adjusters.move;
+function move(opts) {
+  const bounds = opts.bounds;
+  const parentBounds = opts.parentBounds;
+  let top = Math.max(parentBounds.top, bounds.top + opts.deltaY);
+  let left = Math.max(parentBounds.left, bounds.left + opts.deltaX);
+  if (top + bounds.height > parentBounds.bottom) {
+    top = parentBounds.bottom - bounds.height;
+  }
+  if (left + bounds.width > parentBounds.right) {
+    left = parentBounds.right - bounds.width;
+  }
+  return { top, left };
+}
 
-  function changeAdjuster(e) {
-    e = normalizeEvent(e);
-    const bounds = cropper.getBoundingClientRect();
-    const edgeX = Math.max(10, Math.floor(bounds.width / 5));
-    const edgeY = Math.max(10, Math.floor(bounds.height / 5));
-    const isWest = e.clientX < bounds.left + edgeY;
-    const isEast = e.clientX > bounds.right - edgeX;
-    const isNorth = e.clientY < bounds.top + edgeY;
-    const isSouth = e.clientY > bounds.bottom - edgeY;
+function growRight(opts) {
+  const bounds = opts.bounds;
+  const parentBounds = opts.parentBounds;
+  const right = Math.min(parentBounds.right, bounds.left + bounds.width + opts.deltaX);
+  let width = Math.max(minWidth, right - bounds.left);
 
-    const yDirection = isNorth ? 'n' : isSouth ? 's' : '';
-    const xDirection = isEast ? 'e' : isWest ? 'w' : '';
-    const direction = yDirection + xDirection;
-
-    if (direction) {
-      cropper.style.cursor = direction + '-resize';
-      dragAction = adjusters[direction];
-    } else {
-      cropper.style.cursor = 'grabbing';
-      dragAction = adjusters.move;
-    }
+  if (!opts.aspectRatio) {
+    return { width };
   }
 
-  // Change the caret and drag behavior based on where in the cropper we are.
-  cropper.addEventListener('mousemove', changeAdjuster);
+  let height = width * opts.aspectRatio;
 
-  // On mouse down, we'll begin the crop adjustment behavior.
-  const dragstart = (e) => {
+  if (bounds.top + height > parentBounds.bottom) {
+    height = parentBounds.bottom - bounds.top;
+    width = height / opts.aspectRatio;
+  }
+
+  return { width, height };
+}
+
+function growBottom(opts) {
+  const bounds = opts.bounds;
+  const parentBounds = opts.parentBounds;
+  const bottom = Math.min(parentBounds.bottom, bounds.top + bounds.height + opts.deltaY);
+  let height = Math.max(minHeight, bottom - bounds.top);
+
+  if (!opts.aspectRatio) {
+    return { height };
+  }
+
+  let width = height / opts.aspectRatio;
+
+  if (bounds.left + width > parentBounds.right) {
+    width = parentBounds.right - bounds.left;
+    height = width * opts.aspectRatio;
+  }
+
+  return { width, height };
+}
+
+function growLeft(opts) {
+  const bounds = opts.bounds;
+  const parentBounds = opts.parentBounds;
+  let left = Math.max(parentBounds.left, bounds.left + opts.deltaX);
+  let width = bounds.right - left;
+
+  if (width < minWidth) {
+    left -= minWidth - width;
+    width = minWidth;
+  }
+
+  if (!opts.aspectRatio) {
+    return { left, width };
+  }
+
+  let height = width * opts.aspectRatio;
+
+  if (bounds.top + height > parentBounds.bottom) {
+    height = parentBounds.bottom - bounds.top;
+    width = height / opts.aspectRatio;
+    left = bounds.right - width;
+  }
+
+  return { left, width, height };
+}
+
+function growTop(opts) {
+  const bounds = opts.bounds;
+  const parentBounds = opts.parentBounds;
+  let top = Math.max(parentBounds.top, bounds.top + opts.deltaY);
+  let height = bounds.bottom - top;
+
+  if (height < minHeight) {
+    top -= minHeight - height;
+    height = minHeight;
+  }
+
+  if (!opts.aspectRatio) {
+    return { top, height };
+  }
+
+  let width = height / opts.aspectRatio;
+
+  if (bounds.left + width > parentBounds.right) {
+    width = parentBounds.right - bounds.left;
+    height = width * opts.aspectRatio;
+    top = bounds.bottom - height;
+  }
+
+  return { width, height, top };
+}
+
+function applyAdjustment(opts) {
+  let size = {};
+  if (opts.direction === 'sw' && opts.aspectRatio) {
+    return growLeft(opts);
+  }
+  if (opts.direction === 'nw' && opts.aspectRatio) {
+    size = growLeft(opts, 'n');
+    size.top = opts.bounds.bottom - size.height;
+    return size;
+  }
+  if (opts.direction.includes('s')) {
+    Object.assign(size, growBottom(opts));
+    if (opts.aspectRatio) {
+      return size;
+    }
+  }
+  if (opts.direction.includes('n')) {
+    Object.assign(size, growTop(opts));
+    if (opts.aspectRatio) {
+      return size;
+    }
+  }
+  if (opts.direction.includes('w')) {
+    Object.assign(size, growLeft(opts));
+  }
+  if (opts.direction.includes('e')) {
+    Object.assign(size, growRight(opts));
+  }
+  return size;
+}
+
+function createAdjustmentOpts(originalEvent, canvas, aspectRatio, cropper, direction) {
+  const parentBounds = canvas.getBoundingClientRect();
+  const x = originalEvent.clientX;
+  const y = originalEvent.clientY;
+  const opts = {
+    direction,
+    aspectRatio,
+    parentBounds,
+    bounds: cropper.getBoundingClientRect(),
+    deltaY: 0,
+    deltaX: 0,
+    applyEvent(e) {
+      e = normalizeEvent(e);
+      opts.deltaX = e.clientX - x;
+      opts.deltaY = e.clientY - y;
+    },
+    resize(values) {
+      if (values.top) {
+        values.top = values.top - parentBounds.top;
+      }
+      if (values.left) {
+        values.left = values.left - parentBounds.left;
+      }
+      Object.keys(values).forEach((k) => {
+        cropper.style[k] = Math.round(values[k]) + 'px';
+      });
+    },
+  };
+
+  return opts;
+}
+
+export function attachCropper(canvas, aspectRatio) {
+  const cropper = createCropperElement(canvas);
+  let isAdjusting = false;
+
+  on(cropper, 'mousedown', beginAdjusting);
+  on(cropper, 'touchstart', beginAdjusting);
+  on(cropper, 'mousemove', (e) => {
+    if (!e.buttons) {
+      const direction = getDirection(e, cropper);
+      cropper.style.cursor = direction === 'move' ? 'grabbing' : direction + '-resize';
+    }
+  });
+
+  function beginAdjusting(e) {
     e.preventDefault();
-    e.stopPropagation();
-    changeAdjuster(e);
-    dragAction(e);
-  };
+    e = normalizeEvent(e);
+    if (isAdjusting) {
+      return;
+    }
+    isAdjusting = true;
+    const direction = getDirection(e, cropper);
+    const opts = createAdjustmentOpts(e, canvas, aspectRatio, cropper, direction);
+    let offs = [];
 
-  cropper.addEventListener('touchstart', dragstart);
-  cropper.addEventListener('mousedown', dragstart);
+    function adjust(e) {
+      opts.applyEvent(e);
+      opts.resize(direction === 'move' ? move(opts) : applyAdjustment(opts));
+    }
 
-  /**
-   * Remove the cropper from the DOM.
-   */
-  const dispose = () => {
-    cropper.remove();
-  };
+    function endAdjust() {
+      isAdjusting = false;
+      offs.forEach((f) => f());
+    }
 
-  /**
-   * Crop the specified image. Returns a promise that resolves to the cropped image.
-   */
-  const apply = (image) =>
-    cropImage({
-      image,
-      cropBounds: {
-        top: cropper.offsetTop - canvas.offsetTop,
-        left: cropper.offsetLeft - canvas.offsetLeft,
-        width: cropper.offsetWidth,
-        height: cropper.offsetHeight,
-      },
-      scale: image.naturalWidth / canvas.offsetWidth,
-    });
+    offs = [
+      on(document, 'mousemove', adjust),
+      on(document, 'touchmove', adjust),
+      on(document, 'mouseup', endAdjust),
+      on(document, 'touchend', endAdjust),
+      on(document, 'touchcancel', endAdjust),
+    ];
+  }
 
   return {
     el: cropper,
-    dispose,
-    apply,
+    /**
+     * Remove the cropper from the DOM.
+     */
+    dispose() {
+      cropper.remove();
+    },
+    /**
+     * Crop the specified image. Returns a promise that resolves to the cropped image.
+     */
+    apply(image) {
+      return cropImage({
+        image,
+        cropBounds: {
+          top: cropper.offsetTop - canvas.offsetTop,
+          left: cropper.offsetLeft - canvas.offsetLeft,
+          width: cropper.offsetWidth,
+          height: cropper.offsetHeight,
+        },
+        scale: image.naturalWidth / canvas.offsetWidth,
+      });
+    },
   };
 }

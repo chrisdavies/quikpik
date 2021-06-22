@@ -89,7 +89,7 @@ document.body.append(
 quikpik({
   // accept: 'image/*',
   // requireCrop: true,
-  // cropRatio: 1
+  // cropRatio: 1,
   sources: ['filepicker', 'takephoto', 'takevideo', 'takeaudio'],
   upload,
   maxDuration: 2,
