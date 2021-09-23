@@ -30,5 +30,5 @@ export default function quikpik<T>(opts: {
   requireCrop?: boolean;
   cropRatio?: number;
   maxDuration?: number;
-  upload(opts: { files: File[], onProgress: (percent: number, label: string) => any }): void | ({ promise: Promise<T[]>, cancel: () => void });
-}): Promise<T[] | undefined> & { cancel(): void; };
+  upload(opts: { files: File[], onProgress: (percent: number, label: string) => any }): void | ({ promise: Promise<T>, cancel: () => void });
+}): Promise<T | undefined> & { cancel(): void; };
