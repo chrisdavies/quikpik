@@ -229,6 +229,19 @@
   margin: 0.5rem auto 0.5rem;
 }
 
+.quik-filename {
+  max-width: calc(100% - 5rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quik-percent {
+  display: inline-block;
+  text-align: right;
+  width: 4rem;
+}
+
 .quik-progress-bar,
 .quik-progress-bar-wrapper {
   display: block;
