@@ -114,8 +114,9 @@ function appContext(opts) {
     uploadFiles(files);
   }
 
-  function onMediaCaptured([file]) {
+  function onMediaCaptured(files) {
     // Show the audio / video preview / confirmation screen
+    const file = files[0];
     const url = URL.createObjectURL(file);
     disposers.push(() => URL.revokeObjectURL(url));
     setModalBody(
