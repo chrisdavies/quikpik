@@ -3,7 +3,7 @@ import { icoCamera, icoVideo, icoMic } from './ico';
 import { mediaSupport } from './media-lib';
 
 export function renderFilePicker(opts) {
-  const onPickFile = opts.onPickFile,
+  const onPickFiles = opts.onPickFiles,
     accept = opts.accept,
     sources = opts.sources,
     beginCaptureMedia = opts.beginCaptureMedia;
@@ -35,14 +35,19 @@ export function renderFilePicker(opts) {
       ondrop(e) {
         e.preventDefault();
         e.stopPropagation();
-        onPickFile(e.dataTransfer.files && e.dataTransfer.files[0]);
+        let files = e.dataTransfer.files;
+        if (!opts.multiple && files.length > 1) {
+          files = [files[0]];
+        }
+        onPickFiles(files);
       },
     },
     h('input.quik-file-input', {
       type: 'file',
       accept,
+      multiple: opts.multiple,
       onchange(e) {
-        onPickFile(e.target.files[0]);
+        onPickFiles(e.target.files);
       },
     }),
     raw(

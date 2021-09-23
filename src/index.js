@@ -34,7 +34,7 @@ function appContext(opts) {
     on(document.body, 'paste', (e) => {
       if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length) {
         e.preventDefault();
-        onPickFile(e.clipboardData.files[0]);
+        onPickFiles(e.clipboardData.files);
       }
     }),
   ];
@@ -44,8 +44,8 @@ function appContext(opts) {
   const app = {
     ...opts,
     close,
-    uploadFile,
-    onPickFile,
+    uploadFiles,
+    onPickFiles,
     beginCaptureMedia,
     promise,
 
@@ -63,7 +63,7 @@ function appContext(opts) {
     setModalBody(
       app.root,
       renderFilePicker({
-        onPickFile,
+        onPickFiles,
         beginCaptureMedia,
         accept: app.accept,
         sources: app.sources,
@@ -85,8 +85,10 @@ function appContext(opts) {
   }
 
   // A file has been picked. Take the appropriate action...
-  function onPickFile(file) {
+  function onPickFiles(files) {
+    const file = files.length === 1 ? files[0] : undefined;
     if (
+      file &&
       file.type !== 'image/gif' &&
       !file.type.startsWith('image/svg') &&
       file.type.startsWith('image/')
@@ -103,16 +105,16 @@ function appContext(opts) {
           cancelText: 'Cancel',
           confirmText: 'Accept & upload',
           onCancel: resetPicker,
-          onConfirm: uploadFile,
+          onConfirm: (f) => uploadFiles([f]),
         }),
       );
       return;
     }
 
-    uploadFile(file);
+    uploadFiles(files);
   }
 
-  function onMediaCaptured(file) {
+  function onMediaCaptured([file]) {
     // Show the audio / video preview / confirmation screen
     const url = URL.createObjectURL(file);
     disposers.push(() => URL.revokeObjectURL(url));
@@ -125,7 +127,7 @@ function appContext(opts) {
         cancelText: 'Cancel',
         confirmText: 'Accept & upload',
         onCancel: resetPicker,
-        onConfirm: uploadFile,
+        onConfirm: (f) => uploadFiles([f]),
       }),
     );
   }
@@ -135,28 +137,28 @@ function appContext(opts) {
       app.root,
       renderMediaCapture({
         type,
-        onPickFile: type === 'takephoto' ? onPickFile : onMediaCaptured,
+        onPickFiles: type === 'takephoto' ? onPickFiles : onMediaCaptured,
         onCancel: resetPicker,
         maxDuration: app.maxDuration,
       }),
     );
   }
 
-  function uploadFile(file) {
+  function uploadFiles(files) {
     if (opts.customProgress) {
       app.root.remove();
       app.uploader = opts.upload({
-        file,
+        files,
         onProgress() {},
       });
       app.uploader.promise.then((x) => promise.resolve(x)).catch(promise.reject);
     } else {
-      const uploadUi = renderUploadProgress(file);
+      const uploadUi = renderUploadProgress();
       setModalBody(app.root, uploadUi);
       app.uploader = opts.upload({
-        file,
-        onProgress(progress) {
-          updateProgress(uploadUi, progress);
+        files,
+        onProgress(progress, label) {
+          updateProgress(uploadUi, progress, label);
         },
       });
       app.uploader.promise

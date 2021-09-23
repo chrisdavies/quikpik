@@ -27,7 +27,7 @@ function renderRecordingProgress(label, maxDuration, onComplete) {
   };
   let handle;
   const bar = h('span.quik-progress-bar', { style: 'width: 0%' });
-  const percent = h('span.quik-percent', progressText(0));
+  const percent = h('span.quik-duration', progressText(0));
   const el = h(
     '.quik-progress',
     h('span.quik-progress-text', h('span.quik-filename', label), percent),
@@ -54,7 +54,7 @@ function renderRecordingProgress(label, maxDuration, onComplete) {
 }
 
 export function renderMediaCapture(opts) {
-  const onPickFile = opts.onPickFile,
+  const onPickFiles = opts.onPickFiles,
     maxDuration = opts.maxDuration || MAX_DURATION,
     onCancel = opts.onCancel;
   type = opts.type;
@@ -77,7 +77,7 @@ export function renderMediaCapture(opts) {
         message.textContent = 'Generating preview...';
         recordingProgress && recordingProgress.remove();
         const promise = type === 'takephoto' ? recorder.capturePhoto() : recorder.endMediaCapture();
-        promise.then(onPickFile).catch(onError);
+        promise.then((f) => onPickFiles([f])).catch(onError);
       };
       message.textContent =
         type === 'takephoto'
@@ -86,7 +86,7 @@ export function renderMediaCapture(opts) {
               type === 'takeaudio' ? 'audio' : 'video'
             }.`;
       if (type !== 'takeaudio') {
-        el.insertBefore(renderLiveVideo({ recorder, onPickFile, onError }), message);
+        el.insertBefore(renderLiveVideo({ recorder, onPickFiles, onError }), message);
       }
       footer.appendChild(
         h(

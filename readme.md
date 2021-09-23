@@ -27,6 +27,8 @@ Or use unpkg:
 
 ## Usage
 
+See [types.d.ts](./types.d.ts) for type definitions and documentation about the picker options.
+
 Quikpik doesn't implement the upload for you, so the uploader is the one argument you must pass in. The following example shows how to upload a file to S3 using quikpik and [XMLHttpRequest](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest). Here, `presigned` is an object that contains S3 presigned post data.
 
 ```js
