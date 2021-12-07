@@ -9,7 +9,7 @@
   }
 
   const polyfill = document.createElement('script');
-  polyfill.src = 'https://unpkg.com/browse/image-capture@0.4.0/lib/imagecapture.min.js';
+  polyfill.src = 'https://unpkg.com/image-capture@0.4.0/lib/imagecapture.min.js';
   document.head.appendChild(polyfill);
 })();
 
@@ -29,7 +29,7 @@ export function mediaSupport(sources) {
 function getSupportedMimeType(opts) {
   const mimeTypes = opts.video
     ? ['video/mp4', 'video/mpeg', 'video/webm']
-    : ['audio/mpeg', 'audio/webm', 'audio/ogg', 'audio/wav'];
+    : ['audio/mpeg', 'audio/webm', 'audio/ogg', 'audio/wav', 'audio/mp3', 'audio/mp4'];
   const mimeType = mimeTypes.filter((t) => MediaRecorder.isTypeSupported(t))[0];
 
   if (!mimeType) {
