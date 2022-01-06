@@ -70,7 +70,9 @@ export function renderImageEditor(opts) {
                 .save()
                 .then((blob) => (cropper ? loadImage(blob, cropper.apply) : blob))
                 .then((blob) => {
-                  blob.name = file.name;
+                  if (!blob.name) {
+                    blob.name = file.name;
+                  }
                   onConfirm(blob);
                 });
             },

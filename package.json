@@ -1,6 +1,6 @@
 {
   "name": "quikpik",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "main": "./dist/quikpik-cjs.js",
   "types": "./types.d.ts",
   "scripts": {
@@ -23,7 +23,7 @@
   "author": "Christopher Davies <github@christophilus.com>",
   "license": "MIT",
   "devDependencies": {
-    "esbuild": "0.13.2"
+    "esbuild": "0.14.10"
   },
   "eslintConfig": {
     "env": {
