@@ -1,4 +1,4 @@
-export function isSafari() {
+export function isIOS() {
   const agent = navigator.userAgent.toLowerCase();
-  return agent.includes("safari/") && !agent.includes("chrome");
+  return agent.includes('safari/') && /ip(ad|hone|od)/.test(agent);
 }
