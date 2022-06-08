@@ -1,11 +1,11 @@
-import "./main.css";
-import { h } from "../src/dom";
-import quikpik from "../src";
+import './main.css';
+import { h } from '../src/dom';
+import quikpik from '../src';
 
 function upload(opts) {
   const files = opts.files;
   const onProgress = opts.onProgress;
-  console.log("Uploading files:", files);
+  console.log('Uploading files:', files);
 
   const mockProgressInterval = 50;
   let canceled = false;
@@ -25,7 +25,7 @@ function upload(opts) {
       }
     }
     if (canceled) {
-      const err = new Error("Uploads canceled.");
+      const err = new Error('Uploads canceled.');
       err.status = 0;
       throw err;
     }
@@ -38,7 +38,7 @@ function upload(opts) {
     cancel() {
       // Reject should do whatever XMLHttpRequest abort does:
       // The XMLHttpRequest.abort() method aborts the request if it has already been sent. When a request is aborted, its readyState is changed to XMLHttpRequest.UNSENT (0) and the request's status code is set to 0.
-      console.log("I was canceled!");
+      console.log('I was canceled!');
       canceled = true;
     },
   };
@@ -48,9 +48,9 @@ function showPreview(files) {
   if (!files || !files.length) {
     return;
   }
-  console.log("Previewing first of ", files);
+  console.log('Previewing first of ', files);
   const file = files[0];
-  let preview = document.querySelector("img.preview") || h("img.preview");
+  let preview = document.querySelector('img.preview') || h('img.preview');
 
   if (preview.src) {
     URL.revokeObjectURL(preview.src);
@@ -62,16 +62,16 @@ function showPreview(files) {
 
 document.body.append(
   h(
-    "button",
+    'button',
     {
       onclick() {
-        quikpik({ upload, sources: ["filepicker"] }).then(showPreview);
+        quikpik({ upload, sources: ['filepicker'] }).then(showPreview);
       },
     },
-    "Any file, no camera",
+    'Any file, no camera',
   ),
   h(
-    "button",
+    'button',
     {
       onclick(e) {
         quikpik({
@@ -89,7 +89,7 @@ document.body.append(
         }).then(() => (e.target.textContent = `Done!`));
       },
     },
-    "Custom progress",
+    'Custom progress',
   ),
 );
 
@@ -97,8 +97,9 @@ quikpik({
   // accept: 'image/*',
   // requireCrop: true,
   // cropRatio: 1,
-  sources: ["filepicker", "takephoto", "takevideo", "takeaudio"],
+  sources: ['filepicker', 'takephoto', 'takevideo', 'takeaudio'],
   multiple: true,
   upload,
+  cropRatio: 1,
   maxDuration: 2,
 }).then(showPreview);

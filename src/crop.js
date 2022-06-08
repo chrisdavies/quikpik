@@ -91,6 +91,7 @@ function move(opts) {
   const parentBounds = opts.parentBounds;
   let top = Math.max(parentBounds.top, bounds.top + opts.deltaY);
   let left = Math.max(parentBounds.left, bounds.left + opts.deltaX);
+
   if (top + bounds.height > parentBounds.bottom) {
     top = parentBounds.bottom - bounds.height;
   }
@@ -163,6 +164,12 @@ function growLeft(opts) {
     left = bounds.right - width;
   }
 
+  if (bounds.bottom - height < parentBounds.top) {
+    height = bounds.bottom - parentBounds.top;
+    width = height / opts.aspectRatio;
+    left = bounds.right - width;
+  }
+
   return { left, width, height };
 }
 
@@ -223,15 +230,26 @@ function applyAdjustment(opts) {
   return size;
 }
 
+function getOffsetRect(el) {
+  return {
+    left: el.offsetLeft,
+    top: el.offsetTop,
+    height: el.offsetHeight,
+    width: el.offsetWidth,
+    bottom: el.offsetTop + el.offsetHeight,
+    right: el.offsetLeft + el.offsetWidth,
+  };
+}
+
 function createAdjustmentOpts(originalEvent, canvas, aspectRatio, cropper, direction) {
-  const parentBounds = canvas.getBoundingClientRect();
+  const parentBounds = getOffsetRect(canvas);
   const x = originalEvent.clientX;
   const y = originalEvent.clientY;
   const opts = {
     direction,
     aspectRatio,
     parentBounds,
-    bounds: cropper.getBoundingClientRect(),
+    bounds: getOffsetRect(cropper),
     deltaY: 0,
     deltaX: 0,
     applyEvent(e) {
@@ -240,12 +258,6 @@ function createAdjustmentOpts(originalEvent, canvas, aspectRatio, cropper, direc
       opts.deltaY = e.clientY - y;
     },
     resize(values) {
-      if (values.top) {
-        values.top = values.top - parentBounds.top;
-      }
-      if (values.left) {
-        values.left = values.left - parentBounds.left;
-      }
       Object.keys(values).forEach((k) => {
         cropper.style[k] = Math.round(values[k]) + 'px';
       });
