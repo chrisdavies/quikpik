@@ -24,7 +24,7 @@
   "author": "Christopher Davies <github@christophilus.com>",
   "license": "MIT",
   "devDependencies": {
-    "esbuild": "0.14.34"
+    "esbuild": "0.20.1"
   },
   "eslintConfig": {
     "env": {
