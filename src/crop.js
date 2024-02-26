@@ -68,8 +68,8 @@ function createCropperElement(canvas, aspectRatio) {
 
   cropper.style.width = `${width}px`;
   cropper.style.height = `${height}px`;
-  cropper.style.top = '0px';
-  cropper.style.left = `${Math.round((bounds.width - width) / 2)}px`;
+  cropper.style.top = `${canvas.offsetTop}px`;
+  cropper.style.left = `${canvas.offsetLeft}px`;
 
   return cropper;
 }
