@@ -119,9 +119,14 @@ function applyAdjustment(opts) {
   const s = opts.direction.startsWith('s');
   const e = opts.direction.endsWith('e');
   const w = opts.direction.endsWith('w');
-  const { aspectRatio, parentBounds } = opts;
-  let { deltaX, deltaY } = opts;
-  let { left, top, width, height } = opts.bounds;
+  const aspectRatio = opts.aspectRatio;
+  const parentBounds = opts.parentBounds;
+  let deltaX = opts.deltaX;
+  let deltaY = opts.deltaY;
+  let left = opts.bounds.left;
+  let top = opts.bounds.top;
+  let width = opts.bounds.width;
+  let height = opts.bounds.height;
 
   const applyDeltaX = () => {
     if (w) {
