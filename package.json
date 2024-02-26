@@ -1,6 +1,6 @@
 {
   "name": "quikpik",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "main": "./dist/quikpik-cjs.js",
   "types": "./types.d.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "build:cjs": "NODE_ENV=production esbuild src/index.js --global-name=quikpik --bundle --outfile=dist/quikpik.js --sourcemap=external --minify --target=chrome58,firefox57,safari11,edge16 --define:process.env.NODE_ENV=\"'production'\"",
     "build:browser": "NODE_ENV=production esbuild src/index.js --bundle --outfile=dist/quikpik-cjs.js --sourcemap=external --minify --format=cjs  --target=chrome58,firefox57,safari11,edge16 --define:process.env.NODE_ENV=\"'production'\"",
     "start:bundled": "NODE_ENV=production esbuild public/main.js --global-name=quikpik --bundle --outfile=public/build/bundle.js --sourcemap=external --minify --target=chrome58,firefox57,safari11,edge16 --define:process.env.NODE_ENV=\"'production'\" --servedir=public",
-    "start": "esbuild public/main.js --outfile=public/build/bundle.js --bundle --servedir=public",
+    "start": "esbuild public/main.js --outfile=public/build/bundle.js --bundle --servedir=public --serve=3000",
     "test": ""
   },
   "files": [

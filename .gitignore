@@ -15,6 +15,7 @@ coverage
 .DS_Store
 .cache/
 tmp/
+.podman/
 
 # Dist
 *.gz

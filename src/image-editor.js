@@ -27,7 +27,13 @@ export function renderImageEditor(opts) {
   const canvas = h('canvas.quik-confirm-item');
   const content = h('.quik-content', canvas);
   const imageRotater = imageRotate(url, file, canvas, () => {
-    cropper = requireCrop ? attachCropper(canvas, cropRatio) : undefined;
+    if (requireCrop) {
+      // Wait for the elements to be in the DOM, then attach the cropper, so
+      // it can properly size itself on creation.
+      requestAnimationFrame(() => {
+        cropper = requireCrop ? attachCropper(canvas, cropRatio) : undefined;
+      });
+    }
 
     result.appendChild(
       h(

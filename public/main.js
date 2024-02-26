@@ -95,7 +95,7 @@ document.body.append(
 
 quikpik({
   // accept: 'image/*',
-  // requireCrop: true,
+  requireCrop: true,
   // cropRatio: 1,
   sources: ['filepicker', 'takephoto', 'takevideo', 'takeaudio'],
   multiple: true,

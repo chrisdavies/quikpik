@@ -51,11 +51,25 @@ function cropImage(opts) {
 /**
  * @param {HTMLCanvasElement} canvas the canvas to which the cropper will be attached
  */
-function createCropperElement(canvas) {
+function createCropperElement(canvas, aspectRatio) {
   const container = canvas.parentElement;
   const cropper = h('.quik-crop');
+  const bounds = canvas.getBoundingClientRect();
 
   container.appendChild(cropper);
+
+  let height = bounds.height;
+  let width = aspectRatio ? height * aspectRatio : height;
+
+  if (width > bounds.width) {
+    width = bounds.width;
+    height = aspectRatio ? width / aspectRatio : height;
+  }
+
+  cropper.style.width = `${width}px`;
+  cropper.style.height = `${height}px`;
+  cropper.style.top = '0px';
+  cropper.style.left = `${Math.round((bounds.width - width) / 2)}px`;
 
   return cropper;
 }
@@ -82,7 +96,6 @@ function getDirection(e, cropper) {
   const yDirection = isNorth ? 'n' : isSouth ? 's' : '';
   const xDirection = isEast ? 'e' : isWest ? 'w' : '';
   const direction = yDirection + xDirection;
-
   return direction || 'move';
 }
 
@@ -101,133 +114,99 @@ function move(opts) {
   return { top, left };
 }
 
-function growRight(opts) {
-  const bounds = opts.bounds;
-  const parentBounds = opts.parentBounds;
-  const right = Math.min(parentBounds.right, bounds.left + bounds.width + opts.deltaX);
-  let width = Math.max(minWidth, right - bounds.left);
-
-  if (!opts.aspectRatio) {
-    return { width };
-  }
-
-  let height = width * opts.aspectRatio;
-
-  if (bounds.top + height > parentBounds.bottom) {
-    height = parentBounds.bottom - bounds.top;
-    width = height / opts.aspectRatio;
-  }
-
-  return { width, height };
-}
-
-function growBottom(opts) {
-  const bounds = opts.bounds;
-  const parentBounds = opts.parentBounds;
-  const bottom = Math.min(parentBounds.bottom, bounds.top + bounds.height + opts.deltaY);
-  let height = Math.max(minHeight, bottom - bounds.top);
-
-  if (!opts.aspectRatio) {
-    return { height };
-  }
-
-  let width = height / opts.aspectRatio;
-
-  if (bounds.left + width > parentBounds.right) {
-    width = parentBounds.right - bounds.left;
-    height = width * opts.aspectRatio;
-  }
-
-  return { width, height };
-}
-
-function growLeft(opts) {
-  const bounds = opts.bounds;
-  const parentBounds = opts.parentBounds;
-  let left = Math.max(parentBounds.left, bounds.left + opts.deltaX);
-  let width = bounds.right - left;
-
-  if (width < minWidth) {
-    left -= minWidth - width;
-    width = minWidth;
-  }
-
-  if (!opts.aspectRatio) {
-    return { left, width };
-  }
-
-  let height = width * opts.aspectRatio;
-
-  if (bounds.top + height > parentBounds.bottom) {
-    height = parentBounds.bottom - bounds.top;
-    width = height / opts.aspectRatio;
-    left = bounds.right - width;
-  }
-
-  if (bounds.bottom - height < parentBounds.top) {
-    height = bounds.bottom - parentBounds.top;
-    width = height / opts.aspectRatio;
-    left = bounds.right - width;
-  }
-
-  return { left, width, height };
-}
-
-function growTop(opts) {
-  const bounds = opts.bounds;
-  const parentBounds = opts.parentBounds;
-  let top = Math.max(parentBounds.top, bounds.top + opts.deltaY);
-  let height = bounds.bottom - top;
-
-  if (height < minHeight) {
-    top -= minHeight - height;
-    height = minHeight;
-  }
-
-  if (!opts.aspectRatio) {
-    return { top, height };
-  }
-
-  let width = height / opts.aspectRatio;
-
-  if (bounds.left + width > parentBounds.right) {
-    width = parentBounds.right - bounds.left;
-    height = width * opts.aspectRatio;
-    top = bounds.bottom - height;
-  }
-
-  return { width, height, top };
-}
-
 function applyAdjustment(opts) {
-  let size = {};
-  if (opts.direction === 'sw' && opts.aspectRatio) {
-    return growLeft(opts);
-  }
-  if (opts.direction === 'nw' && opts.aspectRatio) {
-    size = growLeft(opts, 'n');
-    size.top = opts.bounds.bottom - size.height;
-    return size;
-  }
-  if (opts.direction.includes('s')) {
-    Object.assign(size, growBottom(opts));
-    if (opts.aspectRatio) {
-      return size;
+  const n = opts.direction.startsWith('n');
+  const s = opts.direction.startsWith('s');
+  const e = opts.direction.endsWith('e');
+  const w = opts.direction.endsWith('w');
+  const { aspectRatio, parentBounds } = opts;
+  let { deltaX, deltaY } = opts;
+  let { left, top, width, height } = opts.bounds;
+
+  const applyDeltaX = () => {
+    if (w) {
+      const newLeft = Math.min(left + width - minWidth, Math.max(left + deltaX, parentBounds.left));
+      const delta = left - newLeft;
+      left -= delta;
+      width += delta;
+    } else if (e) {
+      width = Math.max(minWidth, Math.min(width + deltaX, parentBounds.right - left));
     }
-  }
-  if (opts.direction.includes('n')) {
-    Object.assign(size, growTop(opts));
-    if (opts.aspectRatio) {
-      return size;
+  };
+
+  const applyDeltaY = () => {
+    if (n) {
+      const newTop = Math.min(top + height - minHeight, Math.max(top + deltaY, parentBounds.top));
+      const delta = top - newTop;
+      top -= delta;
+      height += delta;
+    } else if (s) {
+      height = Math.max(minHeight, Math.min(height + deltaY, parentBounds.bottom - top));
     }
+  };
+
+  if (!aspectRatio) {
+    applyDeltaX();
+    applyDeltaY();
+    return { left, top, width, height };
   }
-  if (opts.direction.includes('w')) {
-    Object.assign(size, growLeft(opts));
+
+  // We're enforcing an aspect ratio, which makes things a bit trickier...
+  const maxDelta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
+
+  // Adjust the height (and optionally the top) to have the proper ratio
+  const adjustHeight = () => {
+    const newHeight = width / opts.aspectRatio;
+    const delta = height - newHeight;
+    height = newHeight;
+    if (n) {
+      top += delta;
+    }
+  };
+
+  // Adjust the width (and optionally the left) to have the proper ratio
+  const adjustWidth = () => {
+    const newWidth = height * opts.aspectRatio;
+    const delta = width - newWidth;
+    width = newWidth;
+    if (w) {
+      left += delta;
+    }
+  };
+
+  if (maxDelta === deltaX) {
+    applyDeltaX();
+    adjustHeight();
+  } else {
+    applyDeltaY();
+    adjustWidth();
   }
-  if (opts.direction.includes('e')) {
-    Object.assign(size, growRight(opts));
+
+  // Check for out-of-bounds condition, and adjust if need be.
+  const right = left + width;
+  const bottom = top + height;
+  const oobX = Math.max(parentBounds.left - left, right - parentBounds.right);
+  const oobY = Math.max(parentBounds.top - top, bottom - parentBounds.bottom);
+
+  if (oobX > 0 && oobX > oobY) {
+    if (w) {
+      width -= parentBounds.left - left;
+      left = parentBounds.left;
+    } else {
+      width -= right - parentBounds.right;
+    }
+    adjustHeight();
+  } else if (oobY > 0) {
+    if (n) {
+      height -= parentBounds.top - top;
+      top = parentBounds.top;
+    } else {
+      height -= bottom - parentBounds.bottom;
+    }
+    adjustWidth();
   }
-  return size;
+
+  return { left, top, width, height };
 }
 
 function getOffsetRect(el) {
@@ -268,7 +247,7 @@ function createAdjustmentOpts(originalEvent, canvas, aspectRatio, cropper, direc
 }
 
 export function attachCropper(canvas, aspectRatio) {
-  const cropper = createCropperElement(canvas);
+  const cropper = createCropperElement(canvas, aspectRatio);
   let isAdjusting = false;
 
   on(cropper, 'mousedown', beginAdjusting);
