@@ -12,6 +12,17 @@ export function imageRotate(url, original, canvas, onReady) {
   const image = new Image();
 
   function rotateCanvas() {
+    const cropper = canvas.parentElement.querySelector('.quik-crop');
+    if (cropper) {
+      // If we have a cropper displayed, we'll attempt to keep it roughly in view...
+      const canvasBounds = canvas.getBoundingClientRect();
+      const cropperBounds = cropper.getBoundingClientRect();
+      const leftRatio = (cropperBounds.left - canvasBounds.left) / canvasBounds.width;
+      const topRatio = (cropperBounds.top - canvasBounds.top) / canvasBounds.height;
+      cropper.style.left = `${canvasBounds.left + canvasBounds.height * leftRatio}px`;
+      cropper.style.top = `${canvasBounds.top + canvasBounds.width * topRatio}px`;
+    }
+
     const w = canvas.width;
     canvas.width = canvas.height;
     canvas.height = w;
