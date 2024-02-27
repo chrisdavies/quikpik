@@ -58,18 +58,18 @@ function createCropperElement(canvas, aspectRatio) {
 
   container.appendChild(cropper);
 
-  let height = bounds.height;
+  let height = Math.max(bounds.height - 32, minHeight);
   let width = aspectRatio ? height * aspectRatio : height;
 
   if (width > bounds.width) {
-    width = bounds.width;
+    width = Math.max(bounds.width - 32, minWidth);
     height = aspectRatio ? width / aspectRatio : height;
   }
 
   cropper.style.width = `${width}px`;
   cropper.style.height = `${height}px`;
-  cropper.style.top = `${canvas.offsetTop}px`;
-  cropper.style.left = `${canvas.offsetLeft}px`;
+  cropper.style.top = `${canvas.offsetTop + (bounds.height - height) / 2}px`;
+  cropper.style.left = `${canvas.offsetLeft + (bounds.width - width) / 2}px`;
 
   return cropper;
 }
